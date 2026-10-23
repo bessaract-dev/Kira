@@ -1,13 +1,16 @@
 {
-  "_comment": "Базовые характеристики героини. Улучшения из upgrades.json прибавляются к этим числам.",
+  "_comment": "Базовые характеристики Киры. Улучшения из upgrades.json прибавляются к этим числам.",
   "max_hp": 3,
   "move_speed": 170,
   "jump_velocity": 460,
   "gravity": 1200,
-  "extra_jumps": 0,
-  "dash_charges": 0,
-  "dash_speed": 520,
-  "dash_time": 0.18,
-  "attack_damage": 1,
+  "whip_damage": 1,
+  "throw_damage": 1,
+  "throw_speed": 560,
+  "throw_range": 260,
+  "hook_range": 200,
+  "hook_speed": 660,
+  "wall_slide_speed": 90,
+  "wall_jump_push": 230,
   "invulnerable_time": 1.0
 }

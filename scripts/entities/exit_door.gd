@@ -1,9 +1,9 @@
 extends Interactable
-## Выход с уровня (дверь, алтарь). Может требовать предметы.
+## Выход с уровня (решётка склепа, саркофаг с телом). Может требовать предметы.
 
 const LOOKS := {
-	"door": preload("res://assets/textures/entities/door.png"),
-	"altar": preload("res://assets/textures/entities/altar.png"),
+	"gate": preload("res://assets/textures/entities/door.png"),
+	"body": preload("res://assets/textures/entities/altar.png"),
 }
 
 var target := ""
@@ -17,7 +17,7 @@ func configure(data: Dictionary) -> void:
 	target = data.get("target", "")
 	requires = data.get("requires", [])
 	locked_text = data.get("locked", locked_text)
-	var look: String = data.get("look", "door")
+	var look: String = data.get("look", "gate")
 	if LOOKS.has(look):
 		$Sprite.texture = LOOKS[look]
 		$Sprite.offset.y = -LOOKS[look].get_height() / 2.0

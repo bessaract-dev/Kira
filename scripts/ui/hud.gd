@@ -1,6 +1,6 @@
 extends CanvasLayer
-## Интерфейс на уровне: здоровье, осколки, подсказки, записки,
-## окно прокачки у свечи, меню паузы с сумкой и сенсорные кнопки.
+## Интерфейс на уровне: здоровье, осколки, буквы имени, подсказки, записки,
+## окно прокачки у голубого пламени, меню паузы с сумкой и сенсорные кнопки.
 
 enum Mode { PLAY, NOTE, UPGRADES, PAUSE }
 
@@ -12,6 +12,7 @@ var _message_tween: Tween
 
 @onready var _hearts: HBoxContainer = %Hearts
 @onready var _shard_label: Label = %ShardLabel
+@onready var _letters: Label = %Letters
 @onready var _prompt_label: Label = %PromptLabel
 @onready var _message_box: Control = %MessageBox
 @onready var _message_label: Label = %MessageLabel
@@ -32,6 +33,7 @@ func _ready() -> void:
 	GameState.shards_changed.connect(_update_shards)
 	GameState.note_collected.connect(_on_note_collected)
 	GameState.message_requested.connect(show_message)
+	GameState.item_added.connect(_update_letters.unbind(1))
 	%NoteClose.pressed.connect(_set_mode.bind(Mode.PLAY))
 	%UpgradeClose.pressed.connect(_set_mode.bind(Mode.PLAY))
 	%ResumeButton.pressed.connect(_set_mode.bind(Mode.PLAY))
@@ -40,6 +42,7 @@ func _ready() -> void:
 	_notes_list.item_selected.connect(_on_note_selected)
 	_update_hearts(GameState.hp, GameState.get_max_hp())
 	_update_shards(GameState.shards)
+	_update_letters()
 	_set_mode(Mode.PLAY)
 
 
@@ -102,6 +105,16 @@ func _update_shards(amount: int) -> void:
 	_shard_label.text = str(amount)
 
 
+## Имя по буквам: «К И _ _». Скрыто, пока Кира не вспомнила ни одной.
+func _update_letters() -> void:
+	var letters := GameState.get_letters()
+	var slots: Array[String] = []
+	for i in 4:
+		slots.append(letters[i] if i < letters.size() else "_")
+	_letters.text = " ".join(slots)
+	_letters.visible = not letters.is_empty() or GameState.current_level == "level_02"
+
+
 func _on_focus_changed(target: Interactable) -> void:
 	if target == null:
 		_prompt_label.text = ""
@@ -129,7 +142,7 @@ func _on_note_collected(note_id: String) -> void:
 	_set_mode(Mode.NOTE)
 
 
-# --- Прокачка у свечи ---
+# --- Прокачка у голубого пламени ---
 
 func open_upgrades() -> void:
 	_fill_upgrades()
@@ -139,7 +152,7 @@ func open_upgrades() -> void:
 func _fill_upgrades() -> void:
 	for child in _upgrade_list.get_children():
 		child.queue_free()
-	%UpgradeShards.text = "Осколков памяти: %d    Свеча восстановила силы." % GameState.shards
+	%UpgradeShards.text = "Осколков памяти: %d    Пламя восстановило силы." % GameState.shards
 	for id in GameState.upgrades_db:
 		var info: Dictionary = GameState.upgrades_db[id]
 		var level := GameState.get_upgrade_level(id)

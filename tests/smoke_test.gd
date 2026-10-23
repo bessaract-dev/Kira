@@ -1,14 +1,18 @@
 extends Node
-## Быстрая проверка, что уровни собираются и героиня двигается.
+## Быстрая проверка, что уровни собираются и механики работают.
 ## Запуск: godot --headless --path . res://tests/smoke_test.tscn
 
 var _failed := 0
 
 
 func _ready() -> void:
-	await _test_upgrades()
+	_test_upgrades()
+	_test_chains()
 	for level_id in GameState.LEVELS:
 		await _test_level(level_id)
+	await _test_attacks()
+	await _test_hook()
+	await _test_wall_jump()
 	print("SMOKE ", "OK" if _failed == 0 else "FAILED: %d" % _failed)
 	get_tree().quit(_failed)
 
@@ -24,38 +28,143 @@ func _check(condition: bool, what: String) -> void:
 func _test_upgrades() -> void:
 	GameState.new_game()
 	GameState.add_shards(20)
-	_check(GameState.buy_upgrade("double_jump"), "покупка двойного прыжка")
-	_check(GameState.get_stat("extra_jumps") == 1.0, "extra_jumps = 1")
-	_check(not GameState.buy_upgrade("double_jump"), "второй раз купить нельзя")
 	_check(GameState.buy_upgrade("vitality") and GameState.get_max_hp() == 4, "здоровье 4")
-	_check(GameState.shards == 12, "осколков осталось 12")
+	_check(GameState.buy_upgrade("swift") and GameState.get_stat("move_speed") == 187.0, "скорость 187")
+	_check(GameState.shards == 14, "осколков осталось 14")
+
+
+func _test_chains() -> void:
 	GameState.new_game()
-	await get_tree().process_frame
+	for id in ["chain_whip", "chain_throw", "chain_hook"]:
+		GameState.add_item(id)
+	_check(GameState.abilities.size() == 3, "три приёма цепей")
+	GameState.add_item("letter_k")
+	_check(not GameState.has_ability("whip"), "К забирает хлыст")
+	GameState.add_item("letter_i")
+	_check(not GameState.has_ability("throw"), "И забирает бросок")
+	GameState.add_item("letter_r")
+	_check(not GameState.has_ability("hook"), "Р забирает крюк")
+	GameState.add_item("letter_a")
+	_check(GameState.has_ability("free") and GameState.has_ability("wall_jump"), "А освобождает")
+	_check("".join(GameState.get_letters()) == "КИРА", "имя КИРА")
 
 
-func _test_level(level_id: String) -> void:
-	print(level_id)
+## Смерть Киры перезагрузила бы сцену и прервала тест.
+func _load_level(level_id: String) -> Node2D:
 	GameState.current_level = level_id
 	GameState.checkpoint = null
 	var level: Node2D = load(GameState.LEVEL_SCENE).instantiate()
 	add_child(level)
-	await get_tree().physics_frame
-	var player: Player = level.player
-	_check(player != null, "героиня создана")
-	_check(level.get_node("Entities").get_child_count() > 5, "объекты расставлены")
+	level.player.died.disconnect(level._on_player_died)
 	for i in 30:
 		await get_tree().physics_frame
-	_check(player.is_on_floor(), "героиня стоит на полу")
+	return level
+
+
+func _frames(count: int) -> void:
+	for i in count:
+		await get_tree().physics_frame
+
+
+func _test_level(level_id: String) -> void:
+	print(level_id)
+	GameState.new_game()
+	var level := await _load_level(level_id)
+	var player: Player = level.player
+	_check(player != null and player.is_on_floor(), "Кира стоит на полу")
+	_check(level.get_node("Entities").get_child_count() > 10, "объекты расставлены")
 	var start := player.global_position
 	Input.action_press("move_right")
-	for i in 30:
-		await get_tree().physics_frame
+	await _frames(20)
 	Input.action_release("move_right")
-	_check(player.global_position.x > start.x + 40, "бег вправо")
+	_check(player.global_position.x > start.x + 30, "бег вправо")
 	Input.action_press("jump")
-	for i in 10:
-		await get_tree().physics_frame
+	await _frames(10)
 	Input.action_release("jump")
 	_check(player.global_position.y < start.y - 30, "прыжок")
+	level.queue_free()
+	await get_tree().process_frame
+
+
+func _test_attacks() -> void:
+	print("хлыст и бросок")
+	GameState.new_game()
+	GameState.add_item("chain_whip")
+	GameState.add_item("chain_throw")
+	var level := await _load_level("level_01")
+	var player: Player = level.player
+	var soul: Node2D = null
+	for node in level.get_node("Entities").get_children():
+		if node.scene_file_path.ends_with("enemy_soul.tscn"):
+			soul = node
+			break
+	player.global_position = soul.global_position - Vector2(40, 0)
+	await _frames(2)
+	Input.action_press("attack")
+	await _frames(4)
+	Input.action_release("attack")
+	await _frames(20)
+	_check(not is_instance_valid(soul), "хлыст побеждает душу")
+	Input.action_press("throw")
+	await _frames(4)
+	Input.action_release("throw")
+	var bolts := level.get_children().filter(func(n): return n.name.begins_with("ChainBolt"))
+	_check(bolts.size() == 1, "бросок выпускает цепь")
+	level.queue_free()
+	await get_tree().process_frame
+
+
+func _test_hook() -> void:
+	print("крюк")
+	GameState.new_game()
+	GameState.add_item("chain_hook")
+	var level := await _load_level("level_01")
+	var player: Player = level.player
+	player.global_position = Vector2(65 * 32 + 16, 13 * 32)
+	await _frames(10)
+	Input.action_press("move_right")
+	Input.action_press("hook")
+	await _frames(2)
+	Input.action_release("hook")
+	await _frames(90)
+	Input.action_release("move_right")
+	_check(player.global_position.x > 74 * 32 and player.global_position.y <= 13 * 32 + 1, "перелёт пропасти на крюке")
+	level.queue_free()
+	await get_tree().process_frame
+
+
+func _test_wall_jump() -> void:
+	print("прыжки от стен")
+	GameState.new_game()
+	GameState.add_item("letter_a")
+	var level := await _load_level("level_03")
+	level.get_tree().call_group("chaser_group", "queue_free")
+	var player: Player = level.player
+	player.global_position = Vector2(36 * 32 + 16, 17 * 32)
+	await _frames(10)
+	# Как играет человек: подпрыгнуть, долететь до стены, оттолкнуться к другой стене и так далее.
+	var direction := "move_right"
+	Input.action_press(direction)
+	Input.action_press("jump")
+	await _frames(12)
+	Input.action_release("jump")
+	for i in 16:
+		for f in 40:
+			await get_tree().physics_frame
+			if player.is_on_wall_only():
+				break
+		Input.action_release(direction)
+		direction = "move_right" if direction == "move_left" else "move_left"
+		Input.action_press(direction)
+		Input.action_press("jump")
+		await _frames(14)
+		Input.action_release("jump")
+		if player.global_position.y < 7 * 32:
+			break
+	Input.action_release(direction)
+	Input.action_press("move_right")
+	await _frames(60)
+	Input.action_release("move_right")
+	_check(player.global_position.x > 39 * 32, "выбралась из шахты прыжками от стен")
 	level.queue_free()
 	await get_tree().process_frame

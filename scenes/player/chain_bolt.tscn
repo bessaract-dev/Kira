@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/chain_bolt.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/textures/entities/chain_link.png" id="2_link"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tip"]
+radius = 6.0
+
+[node name="ChainBolt" type="Area2D"]
+collision_layer = 0
+collision_mask = 5
+script = ExtResource("1_script")
+
+[node name="Line" type="Line2D" parent="."]
+texture_repeat = 2
+width = 6.0
+texture = ExtResource("2_link")
+texture_mode = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_tip")

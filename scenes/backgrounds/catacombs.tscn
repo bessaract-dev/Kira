@@ -1,0 +1,50 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/parallax_background.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/textures/backgrounds/catacombs_back.png" id="2_catacombs_back"]
+[ext_resource type="Texture2D" path="res://assets/textures/backgrounds/catacombs_far.png" id="3_catacombs_far"]
+[ext_resource type="Texture2D" path="res://assets/textures/backgrounds/crypt_near.png" id="4_crypt_near"]
+[ext_resource type="Texture2D" path="res://assets/textures/backgrounds/fog.png" id="5_fog"]
+
+[node name="CatacombsBackground" type="Node"]
+
+[node name="Back" type="CanvasLayer" parent="."]
+layer = -10
+script = ExtResource("1_script")
+
+[node name="back" type="Sprite2D" parent="Back"]
+modulate = Color(0.85, 0.85, 1, 1)
+texture = ExtResource("2_catacombs_back")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 1280, 720)
+metadata/factor = 0.03
+
+[node name="far" type="Sprite2D" parent="Back"]
+modulate = Color(0.9, 0.85, 1, 1)
+texture = ExtResource("3_catacombs_far")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 1280, 720)
+metadata/factor = 0.2
+
+[node name="near" type="Sprite2D" parent="Back"]
+modulate = Color(0.85, 0.75, 1, 1)
+texture = ExtResource("4_crypt_near")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 1280, 720)
+metadata/factor = 0.4
+
+[node name="Fog" type="CanvasLayer" parent="."]
+layer = 1
+script = ExtResource("1_script")
+
+[node name="Fog" type="Sprite2D" parent="Fog"]
+modulate = Color(0.75, 0.85, 1, 0.8)
+texture = ExtResource("5_fog")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 1280, 720)
+metadata/factor = 1.3
+metadata/drift = 12.0

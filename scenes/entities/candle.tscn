@@ -9,11 +9,19 @@ script = ExtResource("1_script")
 
 [node name="Light" type="PointLight2D" parent="."]
 position = Vector2(0, -18)
-color = Color(1, 0.72, 0.4, 1)
+color = Color(0.45, 0.7, 1, 1)
 energy = 1.1
 texture = ExtResource("3_light")
 texture_scale = 1.1
 
 [node name="Sprite" type="Sprite2D" parent="."]
 texture = ExtResource("2_sprite")
-offset = Vector2(0, -11)
+offset = Vector2(0, -6.5)
+region_enabled = true
+region_rect = Rect2(0, 9, 10, 13)
+
+[node name="Flame" type="Sprite2D" parent="Sprite"]
+texture = ExtResource("2_sprite")
+offset = Vector2(0, -17)
+region_enabled = true
+region_rect = Rect2(0, 0, 10, 10)

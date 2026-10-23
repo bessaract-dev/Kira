@@ -1,17 +1,42 @@
 {
-  "house_key": {
-    "name": "Старый ключ",
-    "description": "Тяжёлый ключ от входной двери. Холодный, как лёд.",
-    "icon": "res://assets/textures/entities/key.png"
+  "_comment": "grants: какие способности даёт предмет, removes: какие забирает, glyph: буква, которую рисовать вместо иконки. Способности: whip, throw, hook, free (цепей нет), wall_jump.",
+  "chain_whip": {
+    "name": "Цепь-хлыст",
+    "description": "Цепь на правой руке слушается! Ею можно хлестнуть врага рядом.",
+    "grants": ["whip"]
   },
-  "medallion": {
-    "name": "Мамин медальон",
-    "description": "Внутри фотография: ты и мама. Единственная тёплая вещь в этом мире.",
-    "icon": "res://assets/textures/entities/medallion.png"
+  "chain_throw": {
+    "name": "Бросок цепи",
+    "description": "Если резко выбросить руку, цепь летит далеко и бьёт врага на расстоянии.",
+    "grants": ["throw"]
   },
-  "torn_page": {
-    "name": "Вырванная страница",
-    "description": "Та самая страница из книги. «Кто прочтёт наоборот, вернётся домой».",
-    "icon": "res://assets/textures/entities/page.png"
+  "chain_hook": {
+    "name": "Цепь-крюк",
+    "description": "Цепь цепляется за железные кольца. По ним можно перелетать через пропасти.",
+    "grants": ["hook"]
+  },
+  "letter_k": {
+    "name": "Буква К",
+    "description": "Первая буква моего имени. Цепь на руке лопнула, хлыста больше нет.",
+    "glyph": "К",
+    "removes": ["whip"]
+  },
+  "letter_i": {
+    "name": "Буква И",
+    "description": "Вторая буква. Ещё одна цепь рассыпалась: бросать больше нечем.",
+    "glyph": "И",
+    "removes": ["throw"]
+  },
+  "letter_r": {
+    "name": "Буква Р",
+    "description": "Третья буква. Крюк упал и раскололся. Дальше только своими ногами.",
+    "glyph": "Р",
+    "removes": ["hook"]
+  },
+  "letter_a": {
+    "name": "Буква А",
+    "description": "КИРА. Меня зовут Кира! Последняя цепь разбилась. Я такая лёгкая, что могу отталкиваться от стен.",
+    "glyph": "А",
+    "grants": ["free", "wall_jump"]
   }
 }

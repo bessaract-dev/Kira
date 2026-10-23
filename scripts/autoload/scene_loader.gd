@@ -31,7 +31,7 @@ func change_scene(path: String, fade_time := 0.6) -> void:
 	_busy = false
 
 
-## Затемнение без смены сцены (например, при возрождении у свечи).
+## Затемнение без смены сцены (например, при возрождении у пламени).
 func fade_out_in(callback: Callable, fade_time := 0.4) -> void:
 	if _busy:
 		return

@@ -20,77 +20,161 @@ def save(img, *parts):
 
 
 def tiles():
-    """Атлас 4x1: камень, дерево, платформа-полка, тёмный кирпич."""
+    """Атлас 4x1: камень склепа, плита пола, полка-уступ, глубокая кладка."""
     rnd = random.Random(3)
     img = Image.new("RGBA", (T * 4, T), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    # 0: камень (готическая кладка)
-    d.rectangle([0, 0, T - 1, T - 1], fill=(52, 50, 62))
+    # 0: камень склепа (холодный голубовато-серый)
+    d.rectangle([0, 0, T - 1, T - 1], fill=(46, 54, 70))
     for y in (0, 16):
-        d.line([0, y, T, y], fill=(30, 28, 38))
+        d.line([0, y, T, y], fill=(26, 30, 42))
     for x, y in ((0, 0), (16, 0), (8, 16), (24, 16)):
-        d.line([x, y, x, y + 16], fill=(30, 28, 38))
+        d.line([x, y, x, y + 16], fill=(26, 30, 42))
     for _ in range(25):
-        px, py = rnd.randrange(T), rnd.randrange(T)
-        d.point((px, py), fill=(70, 68, 82))
-    d.line([0, 0, T, 0], fill=(80, 78, 95))
-    # 1: дерево (пол дома)
+        d.point((rnd.randrange(T), rnd.randrange(T)), fill=(66, 76, 96))
+    d.line([0, 0, T, 0], fill=(90, 110, 140))
+    # 1: плиты катакомб с трещинами
     o = T
-    d.rectangle([o, 0, o + T - 1, T - 1], fill=(62, 42, 34))
-    for y in (8, 16, 24):
-        d.line([o, y, o + T, y], fill=(40, 26, 22))
-    d.line([o + 12, 0, o + 12, 8], fill=(40, 26, 22))
-    d.line([o + 22, 8, o + 22, 16], fill=(40, 26, 22))
-    d.line([o + 6, 16, o + 6, 24], fill=(40, 26, 22))
-    d.line([o, 0, o + T, 0], fill=(95, 68, 52))
-    # 2: полка / односторонняя платформа (верхние 8 px)
+    d.rectangle([o, 0, o + T - 1, T - 1], fill=(40, 44, 58))
+    d.rectangle([o, 0, o + T - 1, 3], fill=(70, 82, 104))
+    d.line([o + 6, 6, o + 12, 14, o + 10, 22], fill=(24, 26, 36))
+    d.line([o + 22, 10, o + 26, 26], fill=(24, 26, 36))
+    for _ in range(20):
+        d.point((o + rnd.randrange(T), rnd.randrange(4, T)), fill=(58, 64, 82))
+    # 2: каменный уступ (односторонняя платформа, верхние 8 px)
     o = T * 2
-    d.rectangle([o, 0, o + T - 1, 7], fill=(78, 56, 44))
-    d.line([o, 0, o + T, 0], fill=(110, 80, 60))
-    d.line([o + 4, 8, o + 8, 14], fill=(50, 34, 28), width=2)
-    d.line([o + T - 5, 8, o + T - 9, 14], fill=(50, 34, 28), width=2)
-    # 3: тёмный кирпич
+    d.rectangle([o, 0, o + T - 1, 7], fill=(64, 72, 92))
+    d.line([o, 0, o + T, 0], fill=(110, 126, 156))
+    d.polygon([(o + 6, 8), (o + 16, 15), (o + 26, 8)], fill=(40, 46, 60))
+    # 3: глубокая кладка
     o = T * 3
-    d.rectangle([o, 0, o + T - 1, T - 1], fill=(36, 30, 40))
+    d.rectangle([o, 0, o + T - 1, T - 1], fill=(26, 28, 38))
     for y in (0, 10, 21):
-        d.line([o, y, o + T, y], fill=(22, 18, 26))
+        d.line([o, y, o + T, y], fill=(16, 16, 24))
     for x, y in ((o + 10, 0), (o + 22, 10), (o + 6, 21), (o + 26, 21)):
-        d.line([x, y, x, y + 10], fill=(22, 18, 26))
+        d.line([x, y, x, y + 10], fill=(16, 16, 24))
     save(img, "tiles.png")
 
 
-def ghost_girl():
-    """Девочка-душа: бледно-голубой силуэт, 24x44, смотрит вправо."""
+def kira():
+    """Кира-душа: рыжая короткая стрижка, круглые очки, бледное призрачное тело. 24x44."""
     img = Image.new("RGBA", (24, 44), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    body = (190, 215, 255, 230)
-    # платье
-    d.polygon([(12, 18), (3, 41), (21, 41)], fill=body)
-    # волосы и голова
-    d.ellipse([5, 2, 19, 17], fill=(120, 140, 190, 235))
-    d.ellipse([7, 4, 19, 17], fill=body)
-    d.rectangle([4, 8, 8, 24], fill=(120, 140, 190, 235))
-    # глаза
-    d.rectangle([14, 9, 15, 11], fill=(30, 40, 70, 255))
-    d.rectangle([17, 9, 18, 11], fill=(30, 40, 70, 255))
-    # призрачный низ платья
-    for x in range(4, 21, 4):
-        d.polygon([(x, 41), (x + 2, 44), (x + 4, 41)], fill=body)
+    body = (196, 222, 250, 225)
+    d.polygon([(12, 18), (4, 40), (20, 40)], fill=body)              # рубашка/платье
+    d.rectangle([8, 36, 10, 43], fill=body)                           # ноги
+    d.rectangle([14, 36, 16, 43], fill=body)
+    d.ellipse([6, 3, 20, 17], fill=(236, 220, 210, 240))             # лицо
+    d.pieslice([5, 1, 21, 17], 180, 360, fill=(222, 96, 40, 255))    # рыжая стрижка
+    d.rectangle([5, 8, 8, 13], fill=(222, 96, 40, 255))
+    d.ellipse([12, 8, 16, 12], outline=(60, 70, 90, 255))           # очки
+    d.ellipse([16, 8, 20, 12], outline=(60, 70, 90, 255))
+    d.point((14, 10), fill=(40, 50, 80, 255))
+    d.point((18, 10), fill=(40, 50, 80, 255))
+    d.point((21, 6), fill=(120, 190, 255, 255))                      # голубые бабочки
+    d.point((22, 7), fill=(120, 190, 255, 255))
+    d.point((11, 6), fill=(120, 190, 255, 255))
+    d.rectangle([6, 20, 7, 30], fill=body)                           # руки
+    d.rectangle([17, 20, 18, 30], fill=body)
     glow = img.filter(ImageFilter.GaussianBlur(1))
-    out = Image.alpha_composite(glow, img)
-    save(out, "entities", "player.png")
+    save(Image.alpha_composite(glow, img), "entities", "player.png")
+    # Цепи поверх героини: оковы на руках и ногах с обрывками
+    ch = Image.new("RGBA", (24, 44), (0, 0, 0, 0))
+    d = ImageDraw.Draw(ch)
+    iron = (150, 156, 170, 255)
+    for x in (5, 16):
+        d.rectangle([x, 27, x + 3, 29], fill=iron)
+    for x in (7, 13):
+        d.rectangle([x, 40, x + 4, 41], fill=iron)
+    for i in range(4):
+        d.ellipse([1 - i % 2, 30 + i * 3, 4 - i % 2, 33 + i * 3], outline=iron)
+        d.ellipse([20 + i % 2, 30 + i * 3, 23 + i % 2, 33 + i * 3], outline=iron)
+    save(ch, "entities", "chains.png")
 
 
-def shade():
-    """Враг-тень: тёмный сгусток с красными глазами, 32x32."""
-    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+def soul():
+    """Душа-человек с белыми пустыми глазами, 24x40."""
+    img = Image.new("RGBA", (24, 40), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.ellipse([3, 4, 29, 30], fill=(18, 10, 24, 235))
-    for x in range(3, 29, 6):
-        d.polygon([(x, 24), (x + 3, 32), (x + 6, 24)], fill=(18, 10, 24, 235))
-    d.ellipse([10, 12, 14, 16], fill=(230, 40, 50, 255))
-    d.ellipse([19, 12, 23, 16], fill=(230, 40, 50, 255))
-    save(img, "entities", "shade.png")
+    c = (90, 110, 140, 200)
+    d.ellipse([6, 1, 18, 14], fill=c)
+    d.polygon([(4, 14), (20, 14), (22, 40), (2, 40)], fill=c)
+    for x in range(2, 22, 5):
+        d.polygon([(x, 36), (x + 2, 40), (x + 5, 36)], fill=(0, 0, 0, 0))
+    d.ellipse([8, 6, 11, 9], fill=(250, 250, 255, 255))
+    d.ellipse([13, 6, 16, 9], fill=(250, 250, 255, 255))
+    d.line([10, 11, 14, 11], fill=(40, 50, 70, 255))
+    glow = img.filter(ImageFilter.GaussianBlur(1.5))
+    save(Image.alpha_composite(glow, img), "entities", "soul.png")
+
+
+def skeleton():
+    """Скелет в броне, 28x42."""
+    img = Image.new("RGBA", (28, 42), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    bone = (215, 210, 195, 255)
+    armor = (90, 96, 110, 255)
+    d.ellipse([8, 1, 20, 13], fill=bone)
+    d.rectangle([7, 0, 21, 5], fill=armor)                            # шлем
+    d.rectangle([10, 6, 12, 8], fill=(20, 10, 10, 255))
+    d.rectangle([16, 6, 18, 8], fill=(20, 10, 10, 255))
+    d.rectangle([6, 14, 22, 28], fill=armor)                          # кираса
+    d.line([14, 14, 14, 28], fill=(60, 64, 76, 255))
+    d.rectangle([3, 15, 5, 27], fill=bone)
+    d.rectangle([23, 15, 25, 27], fill=bone)
+    d.rectangle([9, 29, 11, 41], fill=bone)
+    d.rectangle([17, 29, 19, 41], fill=bone)
+    d.rectangle([24, 8, 26, 30], fill=(140, 140, 150, 255))           # меч
+    save(img, "entities", "skeleton.png")
+
+
+def doll():
+    """Маленькая заводная кукла, 20x26."""
+    img = Image.new("RGBA", (20, 26), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.ellipse([4, 0, 16, 12], fill=(235, 225, 215, 255))
+    d.ellipse([6, 4, 9, 7], fill=(10, 10, 10, 255))
+    d.ellipse([11, 4, 14, 7], fill=(10, 10, 10, 255))
+    d.line([7, 10, 13, 10], fill=(140, 20, 30, 255))
+    d.polygon([(10, 12), (2, 24), (18, 24)], fill=(120, 30, 50, 255))
+    d.rectangle([7, 24, 8, 25], fill=(60, 50, 50, 255))
+    d.rectangle([11, 24, 12, 25], fill=(60, 50, 50, 255))
+    d.rectangle([0, 15, 3, 16], fill=(180, 150, 80, 255))             # заводной ключ
+    d.rectangle([0, 13, 1, 18], fill=(180, 150, 80, 255))
+    save(img, "entities", "doll.png")
+
+
+def hook_point():
+    img = Image.new("RGBA", (20, 24), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rectangle([8, 0, 11, 6], fill=(110, 116, 130, 255))
+    d.ellipse([2, 6, 17, 21], outline=(170, 176, 190, 255), width=3)
+    save(img, "entities", "hook_point.png")
+
+
+def chain_link():
+    """Одно звено цепи (тайлится вдоль линии хлыста/броска/крюка), 8x6."""
+    img = Image.new("RGBA", (8, 6), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.ellipse([0, 0, 7, 5], outline=(175, 182, 198, 255), width=2)
+    save(img, "entities", "chain_link.png")
+
+
+def chaser():
+    """Стена тьмы с белыми глазами для погони, 96x256 (тянется по высоте уровня)."""
+    rnd = random.Random(11)
+    img = Image.new("RGBA", (96, 256), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(256):
+        for x in range(96):
+            a = min(1.0, (96 - x) / 60.0) if x > 36 else 1.0
+            px[x, y] = (8, 6, 16, int(a * 235))
+    d = ImageDraw.Draw(img)
+    for _ in range(14):
+        x, y = rnd.randrange(20, 70), rnd.randrange(8, 248)
+        d.ellipse([x, y, x + 3, y + 3], fill=(240, 240, 255, 255))
+        d.ellipse([x + 6, y, x + 9, y + 3], fill=(240, 240, 255, 255))
+    save(img, "entities", "chaser.png")
 
 
 def shard():
@@ -110,73 +194,47 @@ def note():
     save(img, "entities", "note.png")
 
 
-def key():
-    img = Image.new("RGBA", (20, 12), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.ellipse([0, 1, 9, 10], outline=(200, 170, 90, 255), width=2)
-    d.rectangle([8, 5, 19, 6], fill=(200, 170, 90, 255))
-    d.rectangle([15, 7, 16, 10], fill=(200, 170, 90, 255))
-    d.rectangle([18, 7, 19, 9], fill=(200, 170, 90, 255))
-    save(img, "entities", "key.png")
-
-
-def medallion():
-    img = Image.new("RGBA", (16, 22), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.line([8, 0, 8, 6], fill=(200, 170, 90, 255))
-    d.ellipse([1, 6, 15, 20], fill=(210, 175, 80, 255), outline=(120, 90, 40, 255))
-    d.ellipse([5, 10, 11, 16], fill=(150, 110, 50, 255))
-    save(img, "entities", "medallion.png")
-
-
-def page():
-    img = Image.new("RGBA", (18, 22), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.polygon([(1, 1), (17, 1), (15, 8), (17, 14), (16, 21), (2, 21)], fill=(200, 185, 150, 255))
-    for y in (5, 9, 13, 17):
-        d.line([4, y, 13, y], fill=(130, 30, 40, 255))
-    save(img, "entities", "page.png")
-
-
 def door():
     img = Image.new("RGBA", (32, 64), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.rectangle([2, 8, 29, 63], fill=(70, 45, 35, 255))
-    d.ellipse([2, 0, 29, 20], fill=(70, 45, 35, 255))
-    d.line([16, 4, 16, 63], fill=(45, 28, 22, 255))
-    d.ellipse([20, 34, 24, 38], fill=(200, 170, 90, 255))
+    d.rectangle([2, 8, 29, 63], fill=(30, 34, 46, 255))
+    d.ellipse([2, 0, 29, 20], fill=(30, 34, 46, 255))
+    for x in range(6, 29, 6):
+        d.line([x, 4, x, 63], fill=(120, 126, 140, 255), width=2)
+    d.line([2, 30, 29, 30], fill=(120, 126, 140, 255), width=2)
     save(img, "entities", "door.png")
 
 
 def altar():
-    """Каменный алтарь с телом девочки, 64x40."""
+    """Каменный саркофаг с телом Киры, 64x40."""
     img = Image.new("RGBA", (64, 40), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     d.rectangle([4, 20, 59, 39], fill=(80, 76, 90, 255))
     d.rectangle([0, 16, 63, 21], fill=(100, 96, 112, 255))
     # тело (лежит)
-    d.ellipse([8, 6, 20, 17], fill=(230, 225, 220, 255))
-    d.polygon([(18, 9), (56, 8), (56, 17), (18, 17)], fill=(235, 235, 240, 255))
+    d.ellipse([8, 6, 20, 17], fill=(236, 222, 212, 255))
+    d.pieslice([6, 4, 18, 18], 90, 270, fill=(222, 96, 40, 255))
+    d.polygon([(18, 9), (56, 8), (56, 17), (18, 17)], fill=(150, 170, 200, 255))
     save(img, "entities", "altar.png")
 
 
 def shrine():
-    """Свеча-святилище (точка сохранения и прокачки), 32x48."""
+    """Голубое пламя (точка сохранения и прокачки), 32x48."""
     img = Image.new("RGBA", (32, 48), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     d.rectangle([4, 34, 27, 47], fill=(70, 66, 80, 255))
     d.rectangle([2, 30, 29, 34], fill=(95, 90, 105, 255))
     d.rectangle([13, 14, 18, 30], fill=(230, 225, 200, 255))
-    d.ellipse([12, 4, 19, 15], fill=(255, 200, 90, 255))
-    d.ellipse([14, 8, 17, 14], fill=(255, 245, 200, 255))
+    d.ellipse([12, 4, 19, 15], fill=(90, 170, 255, 255))
+    d.ellipse([14, 8, 17, 14], fill=(220, 240, 255, 255))
     save(img, "entities", "shrine.png")
 
 
 def candle():
     img = Image.new("RGBA", (10, 22), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.rectangle([3, 9, 6, 21], fill=(225, 220, 195, 255))
-    d.ellipse([2, 1, 7, 10], fill=(255, 190, 80, 255))
+    d.rectangle([3, 9, 6, 21], fill=(200, 200, 210, 255))
+    d.ellipse([2, 1, 7, 10], fill=(255, 255, 255, 255))
     save(img, "entities", "candle.png")
 
 
@@ -207,10 +265,10 @@ def touch_buttons():
     def base():
         img = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
         d = ImageDraw.Draw(img)
-        d.ellipse([4, 4, 123, 123], fill=(20, 16, 30, 140), outline=(200, 180, 140, 200), width=4)
+        d.ellipse([4, 4, 123, 123], fill=(12, 18, 30, 140), outline=(150, 190, 230, 200), width=4)
         return img, d
 
-    fg = (225, 215, 190, 230)
+    fg = (210, 228, 245, 230)
     img, d = base()
     d.polygon([(40, 64), (78, 36), (78, 92)], fill=fg)
     save(img, "ui", "btn_left.png")
@@ -221,25 +279,33 @@ def touch_buttons():
     d.polygon([(64, 34), (94, 74), (34, 74)], fill=fg)
     d.rectangle([54, 74, 74, 94], fill=fg)
     save(img, "ui", "btn_jump.png")
+    # хлыст: дуга из звеньев
     img, d = base()
-    for x in (38, 62):
-        d.polygon([(x, 38), (x + 26, 64), (x, 90), (x + 10, 64)], fill=fg)
-    save(img, "ui", "btn_dash.png")
+    for i in range(7):
+        a = math.pi * (0.9 + i * 0.13)
+        x, y = 64 + 34 * math.cos(a), 74 + 34 * math.sin(a)
+        d.ellipse([x - 6, y - 4, x + 6, y + 4], outline=fg, width=3)
+    save(img, "ui", "btn_whip.png")
+    # бросок: прямая цепь со стрелкой
     img, d = base()
-    pts = []
-    for i in range(16):
-        ang = i * math.pi / 8
-        r = 36 if i % 2 == 0 else 14
-        pts.append((64 + r * math.cos(ang), 64 + r * math.sin(ang)))
-    d.polygon(pts, fill=fg)
-    save(img, "ui", "btn_attack.png")
+    for x in range(30, 80, 12):
+        d.ellipse([x, 59, x + 12, 69], outline=fg, width=3)
+    d.polygon([(82, 50), (100, 64), (82, 78)], fill=fg)
+    save(img, "ui", "btn_throw.png")
+    # крюк
+    img, d = base()
+    d.line([64, 30, 64, 70], fill=fg, width=6)
+    d.arc([40, 52, 88, 100], 0, 180, fill=fg, width=6)
+    d.polygon([(84, 76), (94, 68), (92, 82)], fill=fg)
+    d.polygon([(44, 76), (34, 68), (36, 82)], fill=fg)
+    save(img, "ui", "btn_hook.png")
     img, d = base()
     d.ellipse([44, 44, 84, 84], outline=fg, width=8)
     d.ellipse([58, 58, 70, 70], fill=fg)
     save(img, "ui", "btn_action.png")
     img = Image.new("RGBA", (96, 96), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.ellipse([4, 4, 91, 91], fill=(20, 16, 30, 140), outline=(200, 180, 140, 200), width=4)
+    d.ellipse([4, 4, 91, 91], fill=(12, 18, 30, 140), outline=(150, 190, 230, 200), width=4)
     d.rectangle([32, 28, 42, 68], fill=fg)
     d.rectangle([54, 28, 64, 68], fill=fg)
     save(img, "ui", "btn_pause.png")
@@ -260,83 +326,88 @@ def heart():
 
 
 def backgrounds():
-    rnd = random.Random(7)
     w, h = 1280, 720
 
-    def sky(top, bottom, moon):
+    def gradient(top, bottom):
         img = Image.new("RGBA", (w, h))
         d = ImageDraw.Draw(img)
         for y in range(h):
             t = y / h
-            c = tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(3))
-            d.line([0, y, w, y], fill=c + (255,))
-        if moon:
-            glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-            gd = ImageDraw.Draw(glow)
-            gd.ellipse([930, 60, 1130, 260], fill=moon + (90,))
-            glow = glow.filter(ImageFilter.GaussianBlur(30))
-            img = Image.alpha_composite(img, glow)
-            d = ImageDraw.Draw(img)
-            d.ellipse([985, 115, 1075, 205], fill=moon + (255,))
-        for _ in range(60):
-            x, y = rnd.randrange(w), rnd.randrange(h // 2)
-            d.point((x, y), fill=(200, 200, 230, 255))
+            d.line([0, y, w, y], fill=tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(3)) + (255,))
         return img
 
-    def skyline(color, base_y, spires, seed):
+    def arches(color, top, width, seed, niches):
+        """Ряд готических арок (силуэт стены склепа) с нишами для черепов."""
         r = random.Random(seed)
         img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         d = ImageDraw.Draw(img)
-        d.rectangle([0, base_y, w, h], fill=color)
-        x = 0
-        while x < w:
-            bw = r.randint(60, 160)
-            bh = r.randint(40, 200)
-            d.rectangle([x, base_y - bh, x + bw, base_y], fill=color)
-            if spires and r.random() < 0.6:
-                cx = x + bw // 2
-                d.polygon([(cx - 16, base_y - bh), (cx, base_y - bh - r.randint(60, 160)), (cx + 16, base_y - bh)], fill=color)
-            if r.random() < 0.5:
-                tx = x + r.randint(0, bw)
-                d.line([tx, base_y - bh, tx, base_y - bh - 40], fill=color, width=3)
-                d.line([tx - 10, base_y - bh - 28, tx + 10, base_y - bh - 28], fill=color, width=3)
-            x += bw + r.randint(0, 40)
+        d.rectangle([0, 0, w, h], fill=color)
+        for x in range(0, w, width):
+            hole = (0, 0, 0, 0)
+            ax0, ax1 = x + width * 0.18, x + width * 0.82
+            d.rectangle([ax0, top + (ax1 - ax0) / 2, ax1, h], fill=hole)
+            d.pieslice([ax0, top, ax1, top + (ax1 - ax0)], 180, 360, fill=hole)
+            if niches:
+                for ny in range(top + 40, h - 60, 70):
+                    for nx in (x + 6, x + width - 26):
+                        if r.random() < 0.35:
+                            shade = tuple(int(c * 0.6) for c in color[:3]) + (255,)
+                            bone = tuple(min(255, int(c * 2.2) + 20) for c in color[:3]) + (255,)
+                            d.pieslice([nx, ny, nx + 20, ny + 20], 180, 360, fill=shade)
+                            d.rectangle([nx, ny + 10, nx + 20, ny + 26], fill=shade)
+                            d.ellipse([nx + 5, ny + 10, nx + 15, ny + 20], fill=bone)
+                            d.rectangle([nx + 7, ny + 19, nx + 13, ny + 22], fill=bone)
+                            d.point((nx + 8, ny + 14), fill=shade)
+                            d.point((nx + 12, ny + 14), fill=shade)
         return img
 
-    save(sky((10, 8, 22), (40, 22, 48), (230, 225, 210)), "backgrounds", "otherworld_sky.png")
-    save(skyline((26, 16, 34, 255), 520, True, 1), "backgrounds", "otherworld_far.png")
-    save(skyline((14, 8, 18, 255), 600, True, 2), "backgrounds", "otherworld_near.png")
-    # Дом: тёмные обои с узором и окна с луной
-    img = Image.new("RGBA", (w, h), (28, 22, 32, 255))
-    d = ImageDraw.Draw(img)
-    for x in range(0, w, 64):
-        for y in range(0, h, 64):
-            d.polygon([(x + 32, y + 8), (x + 44, y + 32), (x + 32, y + 56), (x + 20, y + 32)], outline=(40, 32, 46, 255))
-    for wx in (200, 840):
-        d.rectangle([wx, 160, wx + 200, 420], fill=(20, 24, 44, 255), outline=(60, 44, 40, 255), width=10)
-        d.line([wx + 100, 160, wx + 100, 420], fill=(60, 44, 40, 255), width=8)
-        d.line([wx, 290, wx + 200, 290], fill=(60, 44, 40, 255), width=8)
-    save(img, "backgrounds", "house_wall.png")
+    # Склеп: холодный голубой
+    save(gradient((8, 14, 26), (18, 32, 52)), "backgrounds", "crypt_back.png")
+    save(arches((22, 30, 46, 255), 160, 320, 1, False), "backgrounds", "crypt_far.png")
+    save(arches((12, 16, 26, 255), 260, 420, 2, True), "backgrounds", "crypt_near.png")
+    # Катакомбы: голубой с фиолетовыми отсветами
+    save(gradient((10, 10, 24), (34, 22, 50)), "backgrounds", "catacombs_back.png")
+    save(arches((26, 22, 42, 255), 120, 240, 3, True), "backgrounds", "catacombs_far.png")
+    # Глубины: тьма с красным
+    save(gradient((14, 4, 10), (50, 10, 20)), "backgrounds", "depths_back.png")
+    save(arches((30, 10, 18, 255), 200, 360, 4, True), "backgrounds", "depths_far.png")
+
+    # Туман: мягкие пятна, бесшовный по горизонтали
+    fog = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(fog)
+    r = random.Random(9)
+    for _ in range(40):
+        x, y = r.randrange(w), r.randrange(h // 3, h)
+        rx, ry = r.randint(80, 220), r.randint(30, 70)
+        for dx in (-w, 0, w):
+            d.ellipse([x + dx - rx, y - ry, x + dx + rx, y + ry], fill=(200, 220, 255, 26))
+    save(fog.filter(ImageFilter.GaussianBlur(24)), "backgrounds", "fog.png")
 
 
 def icon():
-    img = Image.new("RGBA", (128, 128), (14, 10, 22, 255))
+    img = Image.new("RGBA", (128, 128), (10, 16, 28, 255))
     d = ImageDraw.Draw(img)
-    d.ellipse([70, 14, 110, 54], fill=(230, 225, 210, 255))
+    glow = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    ImageDraw.Draw(glow).ellipse([24, 14, 104, 114], fill=(90, 160, 255, 90))
+    img.alpha_composite(glow.filter(ImageFilter.GaussianBlur(14)))
     girl = Image.open(os.path.join(ROOT, "entities", "player.png")).resize((48, 88), Image.NEAREST)
-    img.alpha_composite(girl, (40, 30))
+    chains = Image.open(os.path.join(ROOT, "entities", "chains.png")).resize((48, 88), Image.NEAREST)
+    img.alpha_composite(girl, (40, 22))
+    img.alpha_composite(chains, (40, 22))
     img.save(os.path.join(ROOT, "..", "..", "icon.png"))
 
 
 if __name__ == "__main__":
     tiles()
-    ghost_girl()
-    shade()
+    kira()
+    soul()
+    skeleton()
+    doll()
+    hook_point()
+    chain_link()
+    chaser()
     shard()
     note()
-    key()
-    medallion()
-    page()
     door()
     altar()
     shrine()

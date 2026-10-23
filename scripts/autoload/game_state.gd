@@ -1,7 +1,7 @@
 extends Node
 ## Глобальное состояние игры (автозагрузка GameState).
 ## Хранит всё, что переживает смену уровня: здоровье, осколки памяти,
-## улучшения, предметы, прочитанные записки и последнюю свечу-сохранение.
+## улучшения, способности цепей, буквы имени, записки и последнее голубое пламя.
 ## Все тексты и числа читаются из папки data/, чтобы их было легко менять.
 
 signal shards_changed(amount: int)
@@ -9,12 +9,14 @@ signal health_changed(hp: int, max_hp: int)
 signal item_added(item_id: String)
 signal note_collected(note_id: String)
 signal upgrade_bought(upgrade_id: String)
+signal abilities_changed
 signal message_requested(text: String)
 signal touch_mode_changed(enabled: bool)
 
 const LEVELS := {
 	"level_01": "res://data/levels/level_01.json",
 	"level_02": "res://data/levels/level_02.json",
+	"level_03": "res://data/levels/level_03.json",
 }
 const LEVEL_SCENE := "res://scenes/levels/level.tscn"
 const ENDING_SCENE := "res://scenes/ui/ending.tscn"
@@ -30,11 +32,13 @@ var shards := 0
 var hp := 3
 var inventory: Array[String] = []
 var collected_notes: Array[String] = []
+## Способности: whip, throw, hook, free (цепи разбиты), wall_jump
+var abilities: Array[String] = []
 ## id улучшения -> купленный уровень
 var upgrade_levels: Dictionary = {}
 ## Уже подобранные вещи на уровнях (чтобы не появлялись снова после смерти)
 var picked: Dictionary = {}
-## Позиция последней свечи на текущем уровне (Vector2) или null
+## Позиция последнего голубого пламени на текущем уровне (Vector2) или null
 var checkpoint = null
 var touch_mode := false
 
@@ -44,7 +48,7 @@ func _ready() -> void:
 	upgrades_db = load_json("res://data/upgrades.json")
 	notes_db = load_json("res://data/notes.json")
 	items_db = load_json("res://data/items.json")
-	for db in [base_stats, upgrades_db]:
+	for db in [base_stats, upgrades_db, items_db]:
 		db.erase("_comment")
 	touch_mode = DisplayServer.is_touchscreen_available() or OS.has_feature("mobile")
 	new_game()
@@ -69,6 +73,7 @@ func new_game() -> void:
 	shards = 0
 	inventory.clear()
 	collected_notes.clear()
+	abilities.clear()
 	upgrade_levels.clear()
 	picked.clear()
 	checkpoint = null
@@ -130,12 +135,36 @@ func heal_full() -> void:
 	health_changed.emit(hp, get_max_hp())
 
 
+# --- Способности цепей ---
+
+func has_ability(id: String) -> bool:
+	return abilities.has(id)
+
+
+## Буквы имени, которые Кира уже вспомнила, по порядку подбора.
+func get_letters() -> Array[String]:
+	var letters: Array[String] = []
+	for id in inventory:
+		var glyph: String = get_item(id).get("glyph", "")
+		if glyph != "":
+			letters.append(glyph)
+	return letters
+
+
 # --- Предметы и записки ---
 
 func add_item(id: String) -> void:
 	if not inventory.has(id):
 		inventory.append(id)
+	var item := get_item(id)
+	for ability in item.get("grants", []):
+		if not abilities.has(ability):
+			abilities.append(ability)
+	for ability in item.get("removes", []):
+		abilities.erase(ability)
 	item_added.emit(id)
+	if item.has("grants") or item.has("removes"):
+		abilities_changed.emit()
 
 
 func has_items(ids: Array) -> bool:

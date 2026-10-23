@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/hook_point.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/textures/entities/hook_point.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://assets/textures/entities/light.png" id="3_light"]
+
+[node name="HookPoint" type="Node2D" groups=["hook_point"]]
+script = ExtResource("1_script")
+
+[node name="Light" type="PointLight2D" parent="."]
+color = Color(0.6, 0.8, 1, 1)
+energy = 0.5
+texture = ExtResource("3_light")
+texture_scale = 0.4
+
+[node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(0, -2)
+texture = ExtResource("2_sprite")

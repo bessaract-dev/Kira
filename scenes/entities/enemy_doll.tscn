@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/enemy.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/textures/entities/doll.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://assets/textures/entities/light.png" id="3_light"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(16, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hitbox"]
+size = Vector2(14, 22)
+
+[node name="EnemyDoll" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+script = ExtResource("1_script")
+speed = 30.0
+charge_speed = 150.0
+sight_range = 180.0
+
+[node name="Light" type="PointLight2D" parent="."]
+position = Vector2(0, -13)
+color = Color(1, 0.3, 0.35, 1)
+energy = 0.45
+texture = ExtResource("3_light")
+texture_scale = 0.35
+
+[node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(0, -13)
+texture = ExtResource("2_sprite")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -12)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="LedgeRay" type="RayCast2D" parent="."]
+position = Vector2(-12, -4)
+target_position = Vector2(0, 16)
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0, -12)
+shape = SubResource("RectangleShape2D_hitbox")

@@ -29,148 +29,185 @@ class Grid:
 
 
 def level_01():
-    g = Grid(64, 16)
-    g.fill(0, 13, 63, 15)          # пол
-    g.fill(0, 0, 63, 0)            # потолок
-    g.fill(0, 0, 0, 15)            # стены
-    g.fill(63, 0, 63, 15)
-    g.fill(20, 1, 20, 9)           # стена спальни (проём снизу)
-    g.fill(42, 1, 42, 9)           # стена гостиной
-    # спальня
+    """Склеп: Кира по очереди осваивает хлыст, бросок и крюк."""
+    g = Grid(90, 16)
+    g.fill(0, 13, 89, 15)          # пол
+    g.fill(0, 0, 89, 0)            # потолок
+    g.fill(0, 0, 0, 15)
+    g.fill(89, 0, 89, 15)
     g.put(3, 12, "P")
-    g.put(5, 12, "t")
-    g.put(8, 12, "a")
-    g.fill(12, 11, 14, 11, "=")
-    g.fill(15, 9, 18, 9, "=")
-    g.put(16, 8, "c")
-    g.put(17, 8, "b")
-    g.put(13, 10, "o")
-    g.put(15, 8, "o")
-    g.put(10, 12, "w")             # окно
-    # коридор
-    g.put(24, 12, "S")
-    g.put(29, 12, "m")
+    g.put(5, 12, "T")
+    g.put(8, 12, "N")
+    g.put(11, 12, "S")
+    g.put(14, 12, "c")
+    g.put(17, 12, "W")             # цепь-хлыст
+    g.put(24, 12, "e")
+    g.put(29, 12, "e")
     g.put(33, 12, "^")
     g.put(34, 12, "^")
-    g.put(33, 10, "o")
-    g.put(34, 10, "o")
-    g.fill(36, 11, 37, 11, "=")
-    g.fill(38, 9, 41, 9, "=")
-    g.put(39, 8, "o")
-    g.put(40, 8, "o")
-    g.put(31, 12, "q")             # часы
-    # гостиная
-    g.put(45, 12, "c")
-    g.put(47, 12, "n")
-    g.fill(49, 11, 51, 11, "=")
-    g.fill(53, 9, 55, 9, "=")
-    g.fill(56, 7, 59, 7, "=")
-    g.fill(51, 5, 54, 5, "=")
-    g.put(58, 6, "k")
-    g.put(50, 10, "o")
-    g.put(54, 8, "o")
-    g.put(57, 6, "o")
-    g.put(52, 4, "o")
-    g.put(61, 12, "D")
+    g.put(36, 12, "c")
+    g.put(39, 12, "B")             # бросок цепи
+    g.fill(44, 1, 54, 10)          # низкий коридор
+    g.put(52, 12, "d")
+    g.put(56, 12, "R")
+    g.fill(57, 10, 60, 10, "=")
+    g.put(62, 12, "G")             # цепь-крюк
+    g.fill(66, 13, 73, 15, ".")    # пропасть
+    g.put(69, 8, "H")
+    g.put(77, 12, "M")
+    g.put(80, 12, "I")
+    g.put(83, 12, "c")
+    g.put(87, 12, "D")
+    for x, y in ((20, 11), (26, 11), (33, 10), (34, 10), (47, 12), (59, 9), (60, 9), (70, 9), (79, 11), (13, 11)):
+        g.put(x, y, "o")
     return {
-        "name": "Дом, который не помнит тебя",
-        "theme": {"tile": "wood", "background": "house", "darkness": "#5a5470"},
+        "name": "Склеп",
+        "theme": {"tile": "crypt", "background": "crypt", "darkness": "#46506e"},
         "music": "",
         "map": g.rows(),
         "entities": {
-            "t": {"type": "trigger", "text": "Где все? Почему так тихо... и почему мне совсем не холодно?"},
-            "a": {"type": "note", "id": "diary"},
-            "b": {"type": "note", "id": "spellbook"},
-            "n": {"type": "note", "id": "mother_note"},
-            "w": {"type": "inspect", "prompt": "Окно", "text": "За окном нет улицы. Только туман и далёкий колокольный звон."},
-            "m": {"type": "inspect", "prompt": "Зеркало", "text": "В зеркале пустая комната. Тебя в нём нет."},
-            "q": {"type": "inspect", "prompt": "Часы", "text": "Часы остановились на 3:13."},
-            "k": {"type": "item", "id": "house_key"},
-            "D": {"type": "exit", "look": "door", "prompt": "Открыть дверь", "target": "level_02",
-                  "requires": ["house_key"], "locked": "Дверь заперта. Где-то в доме должен быть ключ."}
+            "T": {"type": "trigger", "text": "Холодно... Хотя нет, вообще ничего не чувствую. И почему на мне цепи?! Просто красота."},
+            "N": {"type": "note", "id": "black_book"},
+            "W": {"type": "item", "id": "chain_whip"},
+            "B": {"type": "item", "id": "chain_throw"},
+            "G": {"type": "item", "id": "chain_hook"},
+            "R": {"type": "candle", "color": "#ff3550"},
+            "M": {"type": "note", "id": "scratches"},
+            "I": {"type": "inspect", "prompt": "Надгробная плита", "text": "«Здесь спят те, кто не знает, что спит». Бр-р. Надеюсь, это не про меня."},
+            "D": {"type": "exit", "look": "gate", "prompt": "Спуститься в катакомбы", "target": "level_02",
+                  "requires": ["chain_whip", "chain_throw", "chain_hook"],
+                  "locked": "Сначала надо разобраться с цепями. Вдруг внизу пригодятся."}
         }
     }
 
 
 def level_02():
-    g = Grid(120, 22)
-    g.fill(0, 19, 119, 21)         # земля
-    g.fill(0, 0, 0, 21)
-    g.fill(119, 0, 119, 21)
-    # яма с шипами
-    g.fill(27, 19, 29, 20, ".")
-    for x in (27, 28, 29):
-        g.put(x, 20, "^")
-    # стена, которую не перепрыгнуть без двойного прыжка
-    g.fill(58, 15, 59, 18)
-    # собор
-    g.fill(88, 8, 89, 15)
-    g.fill(88, 8, 118, 8)
-    # старт
-    g.put(3, 18, "P")
-    g.put(5, 18, "t")
-    g.put(8, 18, "S")
-    # кладбище
-    g.put(17, 18, "g")
-    g.put(20, 18, "E")
-    g.put(24, 18, "a")
-    g.put(28, 16, "o")
-    g.put(13, 18, "c")
-    g.put(40, 18, "E")
-    g.fill(43, 16, 46, 16, "=")
-    g.put(44, 15, "o")
-    g.put(45, 15, "o")
-    g.fill(47, 13, 49, 13, "=")
-    g.put(48, 12, "o")
-    g.put(50, 18, "E")
-    g.put(53, 18, "S")
-    g.put(55, 18, "h")
-    # за стеной
-    g.put(63, 18, "c")
-    g.put(66, 18, "m")
-    g.put(70, 18, "E")
-    g.put(74, 18, "^")
-    g.put(75, 18, "^")
-    g.put(74, 16, "o")
-    g.fill(78, 16, 80, 16, "=")
-    g.fill(81, 14, 83, 14, "=")
-    g.fill(78, 12, 80, 12, "=")
-    g.fill(81, 10, 83, 10, "=")
-    g.put(79, 11, "o")
-    g.put(82, 9, "p")
-    g.put(83, 9, "c")
-    # собор
-    g.put(91, 18, "u")
-    g.put(95, 18, "b")
-    g.put(100, 18, "E")
-    g.put(106, 18, "c")
-    g.put(114, 18, "c")
-    g.put(110, 18, "X")
-    g.put(97, 16, "o")
+    """Катакомбы: буквы К-И-Р-А. Каждая разбивает цепь и забирает приём."""
+    g = Grid(130, 18)
+    g.fill(0, 15, 129, 17)
+    g.fill(0, 0, 129, 0)
+    g.fill(0, 0, 0, 17)
+    g.fill(129, 0, 129, 17)
+    g.put(3, 14, "P")
+    g.put(6, 14, "S")
+    g.put(8, 14, "T")
+    g.put(11, 14, "N")
+    g.put(14, 14, "U")
+    g.put(17, 14, "k")
+    g.put(20, 14, "c")
+    g.put(24, 14, "1")             # К: нет хлыста
+    g.put(30, 14, "e")
+    g.fill(34, 15, 41, 17, ".")
+    g.put(37, 10, "H")
+    g.put(43, 14, "R")
+    g.put(48, 14, "d")
+    g.put(54, 14, "k")
+    g.put(58, 14, "2")             # И: нет броска
+    g.put(60, 14, "M")
+    g.put(63, 14, "S")
+    g.put(70, 14, "e")
+    g.fill(74, 15, 81, 17, ".")
+    g.put(77, 10, "H")
+    g.put(84, 14, "V")
+    g.put(86, 14, "e")
+    g.fill(90, 12, 95, 12, "=")
+    g.put(93, 14, "d")
+    g.put(100, 14, "3")            # Р: нет крюка
+    g.put(102, 14, "c")
+    g.put(106, 14, "k")
+    g.put(110, 14, "^")
+    g.put(111, 14, "^")
+    g.put(116, 14, "4")            # А: цепей больше нет
+    g.put(119, 14, "R")
+    g.put(126, 14, "D")
+    for x, y in ((12, 13), (22, 13), (37, 12), (46, 13), (65, 13), (77, 12), (92, 11), (94, 11), (104, 13), (121, 13)):
+        g.put(x, y, "o")
     return {
-        "name": "Изнанка",
-        "theme": {"tile": "stone", "background": "otherworld", "darkness": "#4a3a5e"},
+        "name": "Катакомбы",
+        "theme": {"tile": "catacombs", "background": "catacombs", "darkness": "#4a4468"},
         "music": "",
         "map": g.rows(),
         "entities": {
-            "t": {"type": "trigger", "text": "Это не наш двор. Колокол звонит где-то впереди... Кажется, он зовёт меня."},
-            "g": {"type": "inspect", "prompt": "Надгробие", "text": "«Она искала дорогу домой». Имя стёрто."},
-            "a": {"type": "note", "id": "whisper"},
-            "h": {"type": "note", "id": "wall_hint"},
-            "b": {"type": "note", "id": "mother_voice"},
-            "m": {"type": "item", "id": "medallion"},
-            "p": {"type": "item", "id": "torn_page"},
-            "u": {"type": "trigger", "text": "Колокол замолчал. Впереди, на алтаре, кто-то лежит..."},
-            "X": {"type": "exit", "look": "altar", "prompt": "Коснуться тела", "target": "ending",
-                  "requires": ["medallion", "torn_page"],
-                  "locked": "На алтаре лежишь... ты. Бледная, будто спишь. Чтобы вернуться, чего-то не хватает."}
+            "T": {"type": "trigger", "text": "Кости, кости, кости. Тут хоть кто-нибудь живой есть? Ой. Глупый вопрос."},
+            "U": {"type": "trigger", "text": "Скелет в доспехах. Наверняка мальчишка. Фу."},
+            "N": {"type": "note", "id": "drawing"},
+            "M": {"type": "note", "id": "warning"},
+            "V": {"type": "trigger", "text": "Без броска страшновато. Ничего, я быстрая. Просто обойду их."},
+            "R": {"type": "candle", "color": "#a050ff"},
+            "1": {"type": "item", "id": "letter_k"},
+            "2": {"type": "item", "id": "letter_i"},
+            "3": {"type": "item", "id": "letter_r"},
+            "4": {"type": "item", "id": "letter_a"},
+            "D": {"type": "exit", "look": "gate", "prompt": "Бежать наверх", "target": "level_03",
+                  "requires": ["letter_k", "letter_i", "letter_r", "letter_a"],
+                  "locked": "Я ещё не вспомнила своё имя целиком."}
+        }
+    }
+
+
+def level_03():
+    """Глубины: без цепей, погоня тьмы, прыжки от стен, в конце тело Киры."""
+    g = Grid(150, 20)
+    g.fill(0, 17, 149, 19)
+    g.fill(0, 0, 149, 0)
+    g.fill(0, 0, 0, 19)
+    g.fill(149, 0, 149, 19)
+    g.put(4, 16, "P")
+    g.put(1, 16, "C")
+    g.put(6, 16, "T")
+    g.put(9, 16, "R")
+    for x in (14, 15, 22, 23):
+        g.put(x, 16, "^")
+    g.put(27, 16, "d")
+    g.put(31, 16, "W")
+    # первая шахта: заходим под левую стену и прыгаем от стен вверх
+    g.fill(34, 5, 34, 14)
+    g.fill(38, 7, 38, 16)
+    g.put(45, 16, "S")
+    g.put(52, 16, "e")
+    g.fill(55, 14, 58, 14, "=")
+    g.fill(61, 12, 64, 12, "=")
+    g.put(60, 16, "e")
+    g.fill(66, 17, 68, 19, ".")    # пропасть
+    g.put(70, 16, "R")
+    # вторая шахта, повыше
+    g.fill(74, 3, 74, 14)
+    g.fill(78, 5, 78, 16)
+    g.put(86, 16, "k")
+    g.put(90, 16, "^")
+    g.put(91, 16, "^")
+    g.put(96, 16, "S")
+    g.put(98, 16, "N")
+    g.put(104, 16, "d")
+    g.fill(107, 17, 109, 19, ".")
+    g.fill(113, 14, 116, 14, "=")
+    g.put(115, 13, "e")
+    g.put(120, 16, "^")
+    g.put(121, 16, "^")
+    g.put(126, 16, "R")
+    g.put(132, 16, "c")
+    g.put(140, 16, "c")
+    g.put(144, 16, "X")
+    for x, y in ((18, 15), (36, 8), (36, 12), (57, 13), (63, 11), (67, 14), (76, 6), (76, 10), (108, 14), (118, 15)):
+        g.put(x, y, "o")
+    return {
+        "name": "Глубины",
+        "theme": {"tile": "crypt", "background": "depths", "darkness": "#5a3a4e"},
+        "music": "",
+        "map": g.rows(),
+        "entities": {
+            "T": {"type": "trigger", "text": "Пол дрожит. Сзади что-то ползёт... Не оглядываться. БЕЖАТЬ!"},
+            "W": {"type": "trigger", "text": "Стена! Без цепей я такая лёгкая... Может, получится отталкиваться от стен? Прыжок, прыжок!"},
+            "R": {"type": "candle", "color": "#ff3550"},
+            "N": {"type": "note", "id": "heartbeat"},
+            "X": {"type": "exit", "look": "body", "prompt": "Подойти к телу", "target": "ending"}
         }
     }
 
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    for name, data in (("level_01", level_01()), ("level_02", level_02())):
+    for name, data in (("level_01", level_01()), ("level_02", level_02()), ("level_03", level_03())):
         with open(os.path.join(OUT, name + ".json"), "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         print(name)

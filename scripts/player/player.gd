@@ -1,7 +1,9 @@
 class_name Player
 extends CharacterBody2D
-## Девочка-душа. Бег, прыжок (с запасом «койот-времени»), двойной прыжок
-## и рывок после прокачки, вспышка света как атака, взаимодействие с предметами.
+## Кира, девочка-душа в цепях.
+## Бег и прыжок есть всегда. Цепи дают три приёма: хлыст (вблизи), бросок (вдаль)
+## и крюк (перелёт к железным кольцам). Буквы имени разбивают цепи и забирают приёмы,
+## а когда разбита последняя, Кира может отталкиваться от стен.
 ## Числа берутся из GameState.get_stat(), то есть из data/player.json + улучшений.
 
 signal focus_changed(target: Interactable)
@@ -11,10 +13,18 @@ const COYOTE_TIME := 0.1
 const JUMP_BUFFER := 0.12
 const ACCELERATION := 1400.0
 const FRICTION := 1800.0
-const ATTACK_TIME := 0.15
-const ATTACK_COOLDOWN := 0.35
+const WHIP_TIME := 0.15
+const WHIP_COOLDOWN := 0.35
+const THROW_COOLDOWN := 0.5
+const HOOK_MAX_TIME := 0.9
+const WALL_JUMP_LOCK := 0.18
+## Сколько секунд после касания стены от неё ещё можно оттолкнуться.
+const WALL_COYOTE := 0.12
+## Сколько секунд после крюка Кира летит по инерции быстрее обычного бега.
+const HOOK_MOMENTUM_TIME := 0.4
+const BOLT_SCENE := preload("res://scenes/player/chain_bolt.tscn")
 
-## Ниже этой высоты героиня считается упавшей в пропасть.
+## Ниже этой высоты Кира считается упавшей в пропасть.
 var kill_y := 100000.0
 var input_enabled := true
 var focused: Interactable = null
@@ -22,58 +32,58 @@ var focused: Interactable = null
 var _facing := 1.0
 var _coyote := 0.0
 var _jump_buffer := 0.0
-var _jumps_left := 0
-var _dashes_left := 0
-var _dash_timer := 0.0
-var _attack_timer := 0.0
-var _attack_cooldown := 0.0
-var _invulnerable := 0.0
 var _jumping := false
+var _whip_timer := 0.0
+var _whip_cooldown := 0.0
+var _throw_cooldown := 0.0
+var _invulnerable := 0.0
+var _wall_lock := 0.0
+var _momentum := 0.0
+var _wall_timer := 0.0
+var _wall_normal := 0.0
+var _hook_target: Node2D = null
+var _hook_time := 0.0
 var _dead := false
 
 @onready var _sprite: Sprite2D = $Sprite
+@onready var _chains: Sprite2D = $Sprite/Chains
 @onready var _interact_area: Area2D = $InteractArea
-@onready var _attack_area: Area2D = $AttackArea
-@onready var _attack_flash: Sprite2D = $AttackArea/Flash
+@onready var _whip_area: Area2D = $WhipArea
+@onready var _whip_line: Line2D = $WhipArea/WhipLine
+@onready var _hook_line: Line2D = $HookLine
 @onready var _glow: PointLight2D = $Glow
 
 
 func _ready() -> void:
 	add_to_group("player")
-	_attack_flash.visible = false
+	_whip_line.visible = false
+	_hook_line.visible = false
+	GameState.abilities_changed.connect(_on_abilities_changed)
+	_on_abilities_changed()
 
 
 func _physics_process(delta: float) -> void:
 	if _dead:
 		return
 	_tick_timers(delta)
-	var gravity := GameState.get_stat("gravity")
 	var direction := Input.get_axis("move_left", "move_right") if input_enabled else 0.0
 
 	if is_on_floor():
 		_coyote = COYOTE_TIME
-		_jumps_left = int(GameState.get_stat("extra_jumps"))
-		_dashes_left = int(GameState.get_stat("dash_charges"))
+	if input_enabled:
+		if Input.is_action_just_pressed("jump"):
+			_jump_buffer = JUMP_BUFFER
+		if Input.is_action_just_pressed("attack"):
+			_try_whip()
+		if Input.is_action_just_pressed("throw"):
+			_try_throw()
+		if Input.is_action_just_pressed("hook"):
+			_try_hook()
 
-	if input_enabled and Input.is_action_just_pressed("jump"):
-		_jump_buffer = JUMP_BUFFER
-	if input_enabled and Input.is_action_just_pressed("dash"):
-		_try_dash()
-	if input_enabled and Input.is_action_just_pressed("attack"):
-		_try_attack()
-
-	if _dash_timer > 0.0:
-		velocity = Vector2(_facing * GameState.get_stat("dash_speed"), 0.0)
+	if _hook_target != null:
+		_process_hook(delta)
 	else:
-		velocity.y += gravity * delta
-		var speed := GameState.get_stat("move_speed")
-		if direction != 0.0:
-			velocity.x = move_toward(velocity.x, direction * speed, ACCELERATION * delta)
-			_facing = signf(direction)
-		else:
-			velocity.x = move_toward(velocity.x, 0.0, FRICTION * delta)
-		_handle_jump()
-
+		_process_walk(direction, delta)
 	move_and_slide()
 	_update_visuals(delta)
 	_update_focus()
@@ -84,17 +94,40 @@ func _physics_process(delta: float) -> void:
 func _tick_timers(delta: float) -> void:
 	_coyote -= delta
 	_jump_buffer -= delta
-	_dash_timer -= delta
-	_attack_cooldown -= delta
+	_whip_cooldown -= delta
+	_throw_cooldown -= delta
 	_invulnerable -= delta
-	if _attack_timer > 0.0:
-		_attack_timer -= delta
-		if _attack_timer <= 0.0:
-			_attack_area.monitoring = false
-			_attack_flash.visible = false
+	_wall_lock -= delta
+	_momentum -= delta
+	_wall_timer -= delta
+	if _whip_timer > 0.0:
+		_whip_timer -= delta
+		if _whip_timer <= 0.0:
+			_whip_area.monitoring = false
+			_whip_line.visible = false
 
 
-func _handle_jump() -> void:
+func _process_walk(direction: float, delta: float) -> void:
+	velocity.y += GameState.get_stat("gravity") * delta
+	var speed := GameState.get_stat("move_speed")
+	if _momentum > 0.0 and not is_on_floor():
+		# Полёт после крюка: не тормозим, только чуть поворачиваем.
+		if direction != 0.0:
+			_facing = signf(direction)
+	elif _wall_lock <= 0.0:
+		if direction != 0.0:
+			velocity.x = move_toward(velocity.x, direction * speed, ACCELERATION * delta)
+			_facing = signf(direction)
+		else:
+			velocity.x = move_toward(velocity.x, 0.0, FRICTION * delta)
+
+	if _can_wall_jump() and is_on_wall_only():
+		_wall_timer = WALL_COYOTE
+		_wall_normal = get_wall_normal().x
+		if direction != 0.0:
+			# Скольжение по стене
+			velocity.y = minf(velocity.y, GameState.get_stat("wall_slide_speed"))
+
 	var jump_velocity := GameState.get_stat("jump_velocity")
 	if _jump_buffer > 0.0:
 		if _coyote > 0.0:
@@ -102,9 +135,12 @@ func _handle_jump() -> void:
 			_coyote = 0.0
 			_jump_buffer = 0.0
 			_jumping = true
-		elif _jumps_left > 0:
-			velocity.y = -jump_velocity * 0.9
-			_jumps_left -= 1
+		elif _wall_timer > 0.0:
+			var away := _wall_normal
+			_wall_timer = 0.0
+			velocity = Vector2(away * GameState.get_stat("wall_jump_push"), -jump_velocity)
+			_facing = signf(away)
+			_wall_lock = WALL_JUMP_LOCK
 			_jump_buffer = 0.0
 			_jumping = true
 			_sprite.scale = Vector2(0.8, 1.2)
@@ -116,38 +152,110 @@ func _handle_jump() -> void:
 		_jumping = false
 
 
-func _try_dash() -> void:
-	if _dashes_left <= 0 or _dash_timer > 0.0:
-		return
-	_dashes_left -= 1
-	_dash_timer = GameState.get_stat("dash_time")
-	_invulnerable = max(_invulnerable, _dash_timer)
+func _can_wall_jump() -> bool:
+	return GameState.has_ability("wall_jump")
 
 
-func _try_attack() -> void:
-	if _attack_cooldown > 0.0:
+# --- Хлыст ---
+
+func _try_whip() -> void:
+	if not GameState.has_ability("whip") or _whip_cooldown > 0.0:
 		return
-	_attack_cooldown = ATTACK_COOLDOWN
-	_attack_timer = ATTACK_TIME
-	_attack_area.monitoring = true
-	_attack_flash.visible = true
+	_whip_cooldown = WHIP_COOLDOWN
+	_whip_timer = WHIP_TIME
+	_whip_area.monitoring = true
+	_whip_line.visible = true
 	# Ждём кадр физики, чтобы область успела найти врагов.
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-	var damage := int(GameState.get_stat("attack_damage"))
-	for body in _attack_area.get_overlapping_bodies():
+	var damage := int(GameState.get_stat("whip_damage"))
+	for body in _whip_area.get_overlapping_bodies():
 		if body.has_method("take_hit"):
 			body.take_hit(damage, global_position)
 
 
+# --- Бросок ---
+
+func _try_throw() -> void:
+	if not GameState.has_ability("throw") or _throw_cooldown > 0.0:
+		return
+	_throw_cooldown = THROW_COOLDOWN
+	var bolt := BOLT_SCENE.instantiate()
+	bolt.global_position = global_position + Vector2(10.0 * _facing, -24.0)
+	bolt.direction = _facing
+	bolt.owner_player = self
+	get_parent().add_child(bolt)
+
+
+# --- Крюк ---
+
+func _try_hook() -> void:
+	if not GameState.has_ability("hook") or _hook_target != null:
+		return
+	var target := _find_hook_point()
+	if target == null:
+		return
+	_hook_target = target
+	_hook_time = 0.0
+	_hook_line.visible = true
+
+
+func _find_hook_point() -> Node2D:
+	var best: Node2D = null
+	var best_score := INF
+	var hand := global_position + Vector2(0, -24)
+	var max_range := GameState.get_stat("hook_range")
+	for point: Node2D in get_tree().get_nodes_in_group("hook_point"):
+		var offset := point.global_position - hand
+		if offset.length() > max_range or offset.y > 8.0:
+			continue
+		# Кольцо впереди предпочтительнее кольца сзади.
+		var score := offset.length() + (0.0 if signf(offset.x) == _facing else 120.0)
+		if score < best_score:
+			best = point
+			best_score = score
+	return best
+
+
+func _process_hook(delta: float) -> void:
+	_hook_time += delta
+	var hand := global_position + Vector2(0, -24)
+	var offset := _hook_target.global_position - hand
+	var speed := GameState.get_stat("hook_speed")
+	if offset.length() < 18.0 or _hook_time > HOOK_MAX_TIME or (_hook_time > 0.1 and get_slide_collision_count() > 0):
+		_release_hook(offset.normalized() * speed)
+		return
+	velocity = offset.normalized() * speed
+	if offset.x != 0.0:
+		_facing = signf(offset.x)
+
+
+func _release_hook(last_velocity: Vector2) -> void:
+	_hook_target = null
+	_hook_line.visible = false
+	# Сохраняем разгон вперёд и подбрасываем вверх, чтобы долететь дальше кольца.
+	velocity = Vector2(last_velocity.x * 0.75, minf(last_velocity.y * 0.4, -340.0))
+	_momentum = HOOK_MOMENTUM_TIME
+	_coyote = 0.0
+
+
+# --- Внешний вид ---
+
 func _update_visuals(delta: float) -> void:
 	_sprite.flip_h = _facing < 0.0
-	_attack_area.scale.x = _facing
+	_whip_area.scale.x = _facing
 	_sprite.scale = _sprite.scale.lerp(Vector2.ONE, 10.0 * delta)
-	# Мерцание во время неуязвимости
 	_sprite.modulate.a = 0.4 if _invulnerable > 0.0 and int(_invulnerable * 20.0) % 2 == 0 else 1.0
 	_glow.energy = 0.9 + sin(Time.get_ticks_msec() * 0.003) * 0.1
+	if _hook_target != null:
+		_hook_line.points = [Vector2(0, -24), to_local(_hook_target.global_position)]
 
+
+func _on_abilities_changed() -> void:
+	_chains.visible = not GameState.has_ability("free")
+
+
+# --- Взаимодействие ---
 
 func _update_focus() -> void:
 	if focused != null and not is_instance_valid(focused):
@@ -176,6 +284,8 @@ func try_interact() -> void:
 		focused.interact(self)
 
 
+# --- Урон ---
+
 ## Урон от врага или шипов. from: откуда пришёл удар (для отбрасывания).
 func hurt(amount: int, from: Vector2) -> void:
 	if _invulnerable > 0.0 or _dead:
@@ -185,8 +295,9 @@ func hurt(amount: int, from: Vector2) -> void:
 	var push := signf(global_position.x - from.x)
 	if push == 0.0:
 		push = -_facing
+	_hook_target = null
+	_hook_line.visible = false
 	velocity = Vector2(push * 260.0, -280.0)
-	_dash_timer = 0.0
 	if GameState.hp <= 0:
 		die()
 
@@ -196,6 +307,7 @@ func die() -> void:
 		return
 	_dead = true
 	input_enabled = false
+	_hook_line.visible = false
 	var tween := create_tween()
 	tween.tween_property(_sprite, "modulate:a", 0.0, 0.5)
 	died.emit()

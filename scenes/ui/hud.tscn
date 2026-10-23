@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Script" path="res://scripts/ui/touch_controls.gd" id="2_touch"]
@@ -6,8 +6,9 @@
 [ext_resource type="Texture2D" path="res://assets/textures/ui/btn_left.png" id="4_left"]
 [ext_resource type="Texture2D" path="res://assets/textures/ui/btn_right.png" id="5_right"]
 [ext_resource type="Texture2D" path="res://assets/textures/ui/btn_jump.png" id="6_jump"]
-[ext_resource type="Texture2D" path="res://assets/textures/ui/btn_attack.png" id="7_attack"]
-[ext_resource type="Texture2D" path="res://assets/textures/ui/btn_dash.png" id="8_dash"]
+[ext_resource type="Texture2D" path="res://assets/textures/ui/btn_whip.png" id="7_whip"]
+[ext_resource type="Texture2D" path="res://assets/textures/ui/btn_throw.png" id="8_throw"]
+[ext_resource type="Texture2D" path="res://assets/textures/ui/btn_hook.png" id="11_hook"]
 [ext_resource type="Texture2D" path="res://assets/textures/ui/btn_action.png" id="9_action"]
 [ext_resource type="Texture2D" path="res://assets/textures/ui/btn_pause.png" id="10_pause"]
 
@@ -24,6 +25,7 @@ shadow_color = Color(0, 0, 0, 0.8)
 
 [node name="HUD" type="CanvasLayer" groups=["hud"]]
 process_mode = 3
+layer = 10
 script = ExtResource("1_hud")
 
 [node name="TopBar" type="HBoxContainer" parent="."]
@@ -53,6 +55,23 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
 text = "0"
+
+[node name="Letters" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 14.0
+offset_right = 200.0
+offset_bottom = 60.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.7, 0.88, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.1, 0.25, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 34
+text = "_ _ _ _"
+horizontal_alignment = 1
 
 [node name="PromptLabel" type="Label" parent="."]
 unique_name_in_owner = true
@@ -140,20 +159,29 @@ texture_normal = ExtResource("6_jump")
 shape = SubResource("RectangleShape2D_btn")
 action = "jump"
 
-[node name="Attack" type="TouchScreenButton" parent="TouchControls/RightPad"]
+[node name="Whip" type="TouchScreenButton" parent="TouchControls/RightPad"]
+unique_name_in_owner = true
 position = Vector2(-300, -140)
 scale = Vector2(0.85, 0.85)
-texture_normal = ExtResource("7_attack")
+texture_normal = ExtResource("7_whip")
 shape = SubResource("RectangleShape2D_btn")
 action = "attack"
 
-[node name="Dash" type="TouchScreenButton" parent="TouchControls/RightPad"]
+[node name="Throw" type="TouchScreenButton" parent="TouchControls/RightPad"]
+unique_name_in_owner = true
+position = Vector2(-410, -110)
+scale = Vector2(0.75, 0.75)
+texture_normal = ExtResource("8_throw")
+shape = SubResource("RectangleShape2D_btn")
+action = "throw"
+
+[node name="Hook" type="TouchScreenButton" parent="TouchControls/RightPad"]
 unique_name_in_owner = true
 position = Vector2(-150, -290)
 scale = Vector2(0.8, 0.8)
-texture_normal = ExtResource("8_dash")
+texture_normal = ExtResource("11_hook")
 shape = SubResource("RectangleShape2D_btn")
-action = "dash"
+action = "hook"
 
 [node name="Action" type="TouchScreenButton" parent="TouchControls/RightPad"]
 unique_name_in_owner = true
@@ -234,7 +262,7 @@ theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="UpgradePanel/VBox"]
 layout_mode = 2
-text = "Свеча памяти"
+text = "Голубое пламя"
 label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 

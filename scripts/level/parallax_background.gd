@@ -2,6 +2,9 @@ extends CanvasLayer
 ## Фон с параллаксом. Каждый дочерний Sprite2D это слой картинки во всю высоту экрана,
 ## который бесконечно повторяется по горизонтали. В свойстве слоя "factor"
 ## (Metadata) указано, как быстро он едет за камерой: 0 стоит на месте, 1 как мир.
+## Необязательное "drift" сдвигает слой само по себе (пикселей в секунду), так плывёт туман.
+
+var _time := 0.0
 
 
 func _ready() -> void:
@@ -12,7 +15,8 @@ func _ready() -> void:
 		sprite.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_time += delta
 	var camera := get_viewport().get_camera_2d()
 	if camera == null:
 		return
@@ -22,5 +26,6 @@ func _process(_delta: float) -> void:
 		var texture_size := sprite.texture.get_size()
 		var fit := screen.y / texture_size.y
 		var factor: float = sprite.get_meta("factor", 0.5)
+		var drift: float = sprite.get_meta("drift", 0.0)
 		sprite.scale = Vector2(fit, fit)
-		sprite.region_rect = Rect2(center_x * factor / fit, 0.0, screen.x / fit, texture_size.y)
+		sprite.region_rect = Rect2((center_x * factor + _time * drift) / fit, 0.0, screen.x / fit, texture_size.y)
