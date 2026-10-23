@@ -1,0 +1,20 @@
+{
+  "_comment": "Событие игры -> звуковой файл (OGG или WAV). Если файла нет, игра просто молчит. volume_db: громкость, 0 = как есть, -6 = вдвое тише.",
+  "jump": {"file": "res://assets/audio/sfx/jump.ogg", "volume_db": -4},
+  "land": {"file": "res://assets/audio/sfx/land.ogg", "volume_db": -8},
+  "whip": {"file": "res://assets/audio/sfx/whip.ogg"},
+  "throw": {"file": "res://assets/audio/sfx/throw.ogg"},
+  "hook": {"file": "res://assets/audio/sfx/hook.ogg"},
+  "wall_jump": {"file": "res://assets/audio/sfx/wall_jump.ogg", "volume_db": -4},
+  "hurt": {"file": "res://assets/audio/sfx/hurt.ogg"},
+  "death": {"file": "res://assets/audio/sfx/death.ogg"},
+  "enemy_hit": {"file": "res://assets/audio/sfx/enemy_hit.ogg"},
+  "enemy_die": {"file": "res://assets/audio/sfx/enemy_die.ogg"},
+  "shard": {"file": "res://assets/audio/sfx/shard.ogg", "volume_db": -6},
+  "item": {"file": "res://assets/audio/sfx/item.ogg"},
+  "chain_break": {"file": "res://assets/audio/sfx/chain_break.ogg"},
+  "note": {"file": "res://assets/audio/sfx/note.ogg", "volume_db": -6},
+  "shrine": {"file": "res://assets/audio/sfx/shrine.ogg"},
+  "upgrade": {"file": "res://assets/audio/sfx/upgrade.ogg"},
+  "ui_click": {"file": "res://assets/audio/sfx/ui_click.ogg", "volume_db": -8}
+}

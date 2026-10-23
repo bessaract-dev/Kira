@@ -11,5 +11,6 @@ func configure(data: Dictionary) -> void:
 
 
 func interact(_player: Player) -> void:
+	Sound.play("note")
 	GameState.collect_note(note_id)
 	consume()

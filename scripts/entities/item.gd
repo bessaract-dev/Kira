@@ -23,5 +23,6 @@ func configure(data: Dictionary) -> void:
 func interact(_player: Player) -> void:
 	GameState.add_item(item_id)
 	var item := GameState.get_item(item_id)
+	Sound.play("chain_break" if item.has("removes") or item.get("glyph", "") == "А" else "item")
 	GameState.show_message(item.get("description", item.get("name", item_id)))
 	consume()

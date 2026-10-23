@@ -62,7 +62,7 @@ def level_01():
         g.put(x, y, "o")
     return {
         "name": "Склеп",
-        "theme": {"tile": "crypt", "background": "crypt", "darkness": "#46506e"},
+        "theme": {"tile": "crypt", "darkness": "#46506e", "parallax": [{"image": "res://assets/textures/backgrounds/crypt_back.png", "factor": 0.03, "color": "#ccd9ff"}, {"image": "res://assets/textures/backgrounds/crypt_far.png", "factor": 0.15, "color": "#ccd9ff"}, {"image": "res://assets/textures/backgrounds/crypt_near.png", "factor": 0.35, "color": "#ffffff"}]},
         "music": "",
         "map": g.rows(),
         "entities": {
@@ -124,7 +124,7 @@ def level_02():
         g.put(x, y, "o")
     return {
         "name": "Катакомбы",
-        "theme": {"tile": "catacombs", "background": "catacombs", "darkness": "#4a4468"},
+        "theme": {"tile": "catacombs", "darkness": "#4a4468", "parallax": [{"image": "res://assets/textures/backgrounds/catacombs_back.png", "factor": 0.03, "color": "#d9d9ff"}, {"image": "res://assets/textures/backgrounds/catacombs_far.png", "factor": 0.2, "color": "#e6d9ff"}, {"image": "res://assets/textures/backgrounds/crypt_near.png", "factor": 0.4, "color": "#d9bfff"}]},
         "music": "",
         "map": g.rows(),
         "entities": {
@@ -192,7 +192,7 @@ def level_03():
         g.put(x, y, "o")
     return {
         "name": "Глубины",
-        "theme": {"tile": "crypt", "background": "depths", "darkness": "#5a3a4e"},
+        "theme": {"tile": "crypt", "darkness": "#5a3a4e", "fog_color": "#ffa0b4b3", "parallax": [{"image": "res://assets/textures/backgrounds/depths_back.png", "factor": 0.03, "color": "#ffe6f2"}, {"image": "res://assets/textures/backgrounds/depths_far.png", "factor": 0.2, "color": "#ffd9e6"}]},
         "music": "",
         "map": g.rows(),
         "entities": {

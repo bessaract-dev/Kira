@@ -8,6 +8,7 @@ func configure(data: Dictionary) -> void:
 
 
 func interact(_player: Player) -> void:
+	Sound.play("shrine")
 	GameState.checkpoint = global_position
 	GameState.heal_full()
 	get_tree().call_group("hud", "open_upgrades")

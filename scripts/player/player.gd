@@ -23,6 +23,11 @@ const WALL_COYOTE := 0.12
 ## Сколько секунд после крюка Кира летит по инерции быстрее обычного бега.
 const HOOK_MOMENTUM_TIME := 0.4
 const BOLT_SCENE := preload("res://scenes/player/chain_bolt.tscn")
+## Покадровая анимация Киры. Если файла нет, рисуется временная картинка.
+## Имена анимаций: idle, run, jump, fall, whip, throw, hook, wall_slide, hurt, death.
+## Вариант без цепей можно добавить с окончанием _free (например run_free).
+const FRAMES_PATH := "res://assets/characters/kira/kira_frames.tres"
+const ACTION_ANIM_TIME := 0.25
 
 ## Ниже этой высоты Кира считается упавшей в пропасть.
 var kill_y := 100000.0
@@ -44,6 +49,9 @@ var _wall_normal := 0.0
 var _hook_target: Node2D = null
 var _hook_time := 0.0
 var _dead := false
+var _anim: AnimatedSprite2D = null
+var _hurt_timer := 0.0
+var _throw_anim_timer := 0.0
 
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _chains: Sprite2D = $Sprite/Chains
@@ -60,6 +68,8 @@ func _ready() -> void:
 	_hook_line.visible = false
 	GameState.abilities_changed.connect(_on_abilities_changed)
 	_on_abilities_changed()
+	if ResourceLoader.exists(FRAMES_PATH):
+		_setup_animation(load(FRAMES_PATH))
 
 
 func _physics_process(delta: float) -> void:
@@ -84,7 +94,11 @@ func _physics_process(delta: float) -> void:
 		_process_hook(delta)
 	else:
 		_process_walk(direction, delta)
+	var was_on_floor := is_on_floor()
+	var fall_speed := velocity.y
 	move_and_slide()
+	if is_on_floor() and not was_on_floor and fall_speed > 300.0:
+		Sound.play("land")
 	_update_visuals(delta)
 	_update_focus()
 	if global_position.y > kill_y:
@@ -100,6 +114,8 @@ func _tick_timers(delta: float) -> void:
 	_wall_lock -= delta
 	_momentum -= delta
 	_wall_timer -= delta
+	_hurt_timer -= delta
+	_throw_anim_timer -= delta
 	if _whip_timer > 0.0:
 		_whip_timer -= delta
 		if _whip_timer <= 0.0:
@@ -135,6 +151,7 @@ func _process_walk(direction: float, delta: float) -> void:
 			_coyote = 0.0
 			_jump_buffer = 0.0
 			_jumping = true
+			Sound.play("jump")
 		elif _wall_timer > 0.0:
 			var away := _wall_normal
 			_wall_timer = 0.0
@@ -144,6 +161,7 @@ func _process_walk(direction: float, delta: float) -> void:
 			_jump_buffer = 0.0
 			_jumping = true
 			_sprite.scale = Vector2(0.8, 1.2)
+			Sound.play("wall_jump")
 	# Отпустила кнопку раньше: прыжок ниже.
 	if _jumping and velocity.y < 0.0 and not Input.is_action_pressed("jump"):
 		velocity.y *= 0.5
@@ -165,6 +183,7 @@ func _try_whip() -> void:
 	_whip_timer = WHIP_TIME
 	_whip_area.monitoring = true
 	_whip_line.visible = true
+	Sound.play("whip")
 	# Ждём кадр физики, чтобы область успела найти врагов.
 	await get_tree().physics_frame
 	await get_tree().physics_frame
@@ -180,6 +199,8 @@ func _try_throw() -> void:
 	if not GameState.has_ability("throw") or _throw_cooldown > 0.0:
 		return
 	_throw_cooldown = THROW_COOLDOWN
+	_throw_anim_timer = ACTION_ANIM_TIME
+	Sound.play("throw")
 	var bolt := BOLT_SCENE.instantiate()
 	bolt.global_position = global_position + Vector2(10.0 * _facing, -24.0)
 	bolt.direction = _facing
@@ -198,6 +219,7 @@ func _try_hook() -> void:
 	_hook_target = target
 	_hook_time = 0.0
 	_hook_line.visible = true
+	Sound.play("hook")
 
 
 func _find_hook_point() -> Node2D:
@@ -245,10 +267,62 @@ func _update_visuals(delta: float) -> void:
 	_sprite.flip_h = _facing < 0.0
 	_whip_area.scale.x = _facing
 	_sprite.scale = _sprite.scale.lerp(Vector2.ONE, 10.0 * delta)
-	_sprite.modulate.a = 0.4 if _invulnerable > 0.0 and int(_invulnerable * 20.0) % 2 == 0 else 1.0
+	var blink := 0.4 if _invulnerable > 0.0 and int(_invulnerable * 20.0) % 2 == 0 else 1.0
+	_sprite.modulate.a = blink
+	if _anim:
+		_anim.flip_h = _facing < 0.0
+		_anim.modulate.a = blink
+		_play(_pick_animation())
 	_glow.energy = 0.9 + sin(Time.get_ticks_msec() * 0.003) * 0.1
 	if _hook_target != null:
 		_hook_line.points = [Vector2(0, -24), to_local(_hook_target.global_position)]
+
+
+# --- Покадровая анимация ---
+
+func _setup_animation(frames: SpriteFrames) -> void:
+	var names := frames.get_animation_names()
+	if names.is_empty():
+		return
+	_anim = AnimatedSprite2D.new()
+	_anim.name = "Animated"
+	_anim.sprite_frames = frames
+	var height := float(frames.get_frame_texture(names[0], 0).get_height())
+	# Рост Киры в игре в пикселях мира; можно задать в метаданных SpriteFrames (height_px).
+	var target: float = frames.get_meta("height_px", 48.0)
+	_anim.scale = Vector2.ONE * (target / height)
+	_anim.offset.y = -height / 2.0
+	add_child(_anim)
+	move_child(_anim, _sprite.get_index())
+	_sprite.visible = false
+
+
+func _pick_animation() -> String:
+	if _dead:
+		return "death"
+	if _hurt_timer > 0.0:
+		return "hurt"
+	if _hook_target != null:
+		return "hook"
+	if _whip_timer > 0.0:
+		return "whip"
+	if _throw_anim_timer > 0.0:
+		return "throw"
+	if not is_on_floor():
+		if is_on_wall_only() and velocity.y > 0.0:
+			return "wall_slide"
+		return "jump" if velocity.y < 0.0 else "fall"
+	return "run" if absf(velocity.x) > 10.0 else "idle"
+
+
+func _play(animation: String) -> void:
+	var frames := _anim.sprite_frames
+	if GameState.has_ability("free") and frames.has_animation(animation + "_free"):
+		animation += "_free"
+	if not frames.has_animation(animation):
+		animation = "idle" if frames.has_animation("idle") else frames.get_animation_names()[0]
+	if _anim.animation != animation or not _anim.is_playing():
+		_anim.play(animation)
 
 
 func _on_abilities_changed() -> void:
@@ -298,6 +372,8 @@ func hurt(amount: int, from: Vector2) -> void:
 	_hook_target = null
 	_hook_line.visible = false
 	velocity = Vector2(push * 260.0, -280.0)
+	_hurt_timer = ACTION_ANIM_TIME
+	Sound.play("hurt")
 	if GameState.hp <= 0:
 		die()
 
@@ -308,6 +384,7 @@ func die() -> void:
 	_dead = true
 	input_enabled = false
 	_hook_line.visible = false
+	Sound.play("death")
 	var tween := create_tween()
-	tween.tween_property(_sprite, "modulate:a", 0.0, 0.5)
+	tween.tween_property(_anim if _anim else _sprite, "modulate:a", 0.0, 0.8)
 	died.emit()

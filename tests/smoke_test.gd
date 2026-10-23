@@ -10,6 +10,7 @@ func _ready() -> void:
 	_test_chains()
 	for level_id in GameState.LEVELS:
 		await _test_level(level_id)
+	await _test_animation()
 	await _test_attacks()
 	await _test_hook()
 	await _test_wall_jump()
@@ -82,6 +83,33 @@ func _test_level(level_id: String) -> void:
 	await _frames(10)
 	Input.action_release("jump")
 	_check(player.global_position.y < start.y - 30, "прыжок")
+	level.queue_free()
+	await get_tree().process_frame
+
+
+func _test_animation() -> void:
+	print("покадровая анимация")
+	GameState.new_game()
+	var level := await _load_level("level_01")
+	var player: Player = level.player
+	var frames := SpriteFrames.new()
+	var image := Image.create(64, 96, false, Image.FORMAT_RGBA8)
+	frames.add_frame("default", ImageTexture.create_from_image(image))
+	frames.rename_animation("default", "idle")
+	frames.add_animation("run")
+	frames.add_frame("run", ImageTexture.create_from_image(image))
+	player._setup_animation(frames)
+	await _frames(2)
+	var anim: AnimatedSprite2D = player.get_node("Animated")
+	_check(anim.animation == "idle" and is_equal_approx(anim.scale.x, 0.5), "анимация покоя, рост 48 px")
+	Input.action_press("move_right")
+	await _frames(10)
+	Input.action_release("move_right")
+	_check(anim.animation == "run", "анимация бега")
+	Input.action_press("jump")
+	await _frames(5)
+	Input.action_release("jump")
+	_check(anim.animation == "idle", "нет анимации прыжка: показывается покой")
 	level.queue_free()
 	await get_tree().process_frame
 

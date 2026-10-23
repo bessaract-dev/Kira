@@ -8,7 +8,6 @@ var _time := 0.0
 
 
 func _ready() -> void:
-	layer = -10
 	for sprite: Sprite2D in get_children():
 		sprite.centered = false
 		sprite.region_enabled = true

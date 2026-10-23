@@ -2,8 +2,24 @@
   "name": "Склеп",
   "theme": {
     "tile": "crypt",
-    "background": "crypt",
-    "darkness": "#46506e"
+    "darkness": "#46506e",
+    "parallax": [
+      {
+        "image": "res://assets/textures/backgrounds/crypt_back.png",
+        "factor": 0.03,
+        "color": "#ccd9ff"
+      },
+      {
+        "image": "res://assets/textures/backgrounds/crypt_far.png",
+        "factor": 0.15,
+        "color": "#ccd9ff"
+      },
+      {
+        "image": "res://assets/textures/backgrounds/crypt_near.png",
+        "factor": 0.35,
+        "color": "#ffffff"
+      }
+    ]
   },
   "music": "",
   "map": [

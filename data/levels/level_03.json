@@ -2,8 +2,20 @@
   "name": "Глубины",
   "theme": {
     "tile": "crypt",
-    "background": "depths",
-    "darkness": "#5a3a4e"
+    "darkness": "#5a3a4e",
+    "fog_color": "#ffa0b4b3",
+    "parallax": [
+      {
+        "image": "res://assets/textures/backgrounds/depths_back.png",
+        "factor": 0.03,
+        "color": "#ffe6f2"
+      },
+      {
+        "image": "res://assets/textures/backgrounds/depths_far.png",
+        "factor": 0.2,
+        "color": "#ffd9e6"
+      }
+    ]
   },
   "music": "",
   "map": [

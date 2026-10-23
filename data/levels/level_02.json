@@ -2,8 +2,24 @@
   "name": "Катакомбы",
   "theme": {
     "tile": "catacombs",
-    "background": "catacombs",
-    "darkness": "#4a4468"
+    "darkness": "#4a4468",
+    "parallax": [
+      {
+        "image": "res://assets/textures/backgrounds/catacombs_back.png",
+        "factor": 0.03,
+        "color": "#d9d9ff"
+      },
+      {
+        "image": "res://assets/textures/backgrounds/catacombs_far.png",
+        "factor": 0.2,
+        "color": "#e6d9ff"
+      },
+      {
+        "image": "res://assets/textures/backgrounds/crypt_near.png",
+        "factor": 0.4,
+        "color": "#d9bfff"
+      }
+    ]
   },
   "music": "",
   "map": [

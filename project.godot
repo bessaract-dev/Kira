@@ -15,6 +15,7 @@ config/quit_on_go_back=false
 
 GameState="*res://scripts/autoload/game_state.gd"
 SceneLoader="*res://scripts/autoload/scene_loader.gd"
+Sound="*res://scripts/autoload/sound.gd"
 
 [display]
 

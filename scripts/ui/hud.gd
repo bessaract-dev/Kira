@@ -186,6 +186,7 @@ func _fill_upgrades() -> void:
 
 func _on_buy_pressed(id: String) -> void:
 	if GameState.buy_upgrade(id):
+		Sound.play("upgrade")
 		show_message("Новая сила: " + GameState.upgrades_db[id].get("name", id))
 		_fill_upgrades()
 

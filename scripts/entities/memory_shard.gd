@@ -20,6 +20,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if not body is Player:
 		return
 	GameState.add_shards(1)
+	Sound.play("shard")
 	if persist_key != "":
 		GameState.mark_picked(persist_key)
 	set_deferred("monitoring", false)

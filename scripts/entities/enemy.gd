@@ -73,6 +73,7 @@ func take_hit(damage: int, from: Vector2) -> void:
 	_stun = 0.15 if heavy else 0.3
 	var push := 60.0 if heavy else 220.0
 	velocity = Vector2(signf(global_position.x - from.x) * push, -80.0 if heavy else -150.0)
+	Sound.play("enemy_hit")
 	_sprite.modulate = Color(3, 3, 3)
 	create_tween().tween_property(_sprite, "modulate", Color.WHITE, 0.2)
 	if _hp <= 0:
@@ -81,6 +82,7 @@ func take_hit(damage: int, from: Vector2) -> void:
 
 func _die() -> void:
 	GameState.add_shards(shard_reward)
+	Sound.play("enemy_die")
 	set_physics_process(false)
 	$CollisionShape2D.set_deferred("disabled", true)
 	_hitbox.set_deferred("monitoring", false)
