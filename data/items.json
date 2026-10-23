@@ -1,0 +1,17 @@
+{
+  "house_key": {
+    "name": "Старый ключ",
+    "description": "Тяжёлый ключ от входной двери. Холодный, как лёд.",
+    "icon": "res://assets/textures/entities/key.png"
+  },
+  "medallion": {
+    "name": "Мамин медальон",
+    "description": "Внутри фотография: ты и мама. Единственная тёплая вещь в этом мире.",
+    "icon": "res://assets/textures/entities/medallion.png"
+  },
+  "torn_page": {
+    "name": "Вырванная страница",
+    "description": "Та самая страница из книги. «Кто прочтёт наоборот, вернётся домой».",
+    "icon": "res://assets/textures/entities/page.png"
+  }
+}

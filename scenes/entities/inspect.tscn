@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/inspect.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
+size = Vector2(32, 48)
+
+[sub_resource type="Gradient" id="Gradient_sparkle"]
+colors = PackedColorArray(1, 0.95, 0.8, 0, 1, 0.95, 0.8, 0.9, 1, 0.95, 0.8, 0)
+offsets = PackedFloat32Array(0, 0.4, 1)
+
+[node name="Inspect" type="Area2D"]
+script = ExtResource("1_script")
+
+[node name="Sparkles" type="CPUParticles2D" parent="."]
+position = Vector2(0, -24)
+amount = 3
+lifetime = 1.6
+emission_shape = 3
+emission_rect_extents = Vector2(10, 14)
+gravity = Vector2(0, -8)
+scale_amount_min = 1.5
+scale_amount_max = 2.5
+color_ramp = SubResource("Gradient_sparkle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -24)
+shape = SubResource("RectangleShape2D_area")

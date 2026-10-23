@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/level/level.gd" id="1_script"]
+[ext_resource type="TileSet" path="res://resources/tileset.tres" id="2_tiles"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
+
+[node name="Level" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Darkness" type="CanvasModulate" parent="."]
+color = Color(0.4, 0.38, 0.5, 1)
+
+[node name="Tiles" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tiles")
+
+[node name="Entities" type="Node2D" parent="."]
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]

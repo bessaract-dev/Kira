@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/memory_shard.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/textures/entities/shard.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://assets/textures/entities/light.png" id="3_light"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
+size = Vector2(20, 24)
+
+[node name="MemoryShard" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_script")
+
+[node name="Light" type="PointLight2D" parent="."]
+position = Vector2(0, -14)
+color = Color(0.4, 0.9, 1, 1)
+energy = 0.6
+texture = ExtResource("3_light")
+texture_scale = 0.3
+
+[node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(0, -14)
+texture = ExtResource("2_sprite")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -12)
+shape = SubResource("RectangleShape2D_area")
