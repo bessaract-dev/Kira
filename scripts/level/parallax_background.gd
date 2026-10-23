@@ -12,6 +12,7 @@ func _ready() -> void:
 		sprite.centered = false
 		sprite.region_enabled = true
 		sprite.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 
 
 func _process(delta: float) -> void:

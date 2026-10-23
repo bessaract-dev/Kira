@@ -62,7 +62,7 @@ def level_01():
         g.put(x, y, "o")
     return {
         "name": "Склеп",
-        "theme": {"tile": "crypt", "darkness": "#46506e", "parallax": [{"image": "res://assets/textures/backgrounds/crypt_back.png", "factor": 0.03, "color": "#ccd9ff"}, {"image": "res://assets/textures/backgrounds/crypt_far.png", "factor": 0.15, "color": "#ccd9ff"}, {"image": "res://assets/textures/backgrounds/crypt_near.png", "factor": 0.35, "color": "#ffffff"}]},
+        "theme": {"tile": "crypt", "darkness": "#46506e", "parallax": [{"image": "res://assets/backgrounds/crypt/01_far.png", "factor": 0.05}, {"image": "res://assets/backgrounds/crypt/02_mid.png", "factor": 0.3}, {"image": "res://assets/backgrounds/crypt/03_ground.png", "factor": 0.6}, {"image": "res://assets/backgrounds/crypt/04_near_top.png", "factor": 1.3, "front": True}]},
         "music": "",
         "map": g.rows(),
         "entities": {

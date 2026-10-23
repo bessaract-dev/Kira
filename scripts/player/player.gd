@@ -290,8 +290,10 @@ func _setup_animation(frames: SpriteFrames) -> void:
 	_anim = AnimatedSprite2D.new()
 	_anim.name = "Animated"
 	_anim.sprite_frames = frames
+	# Рисованные кадры сильно уменьшаются: сглаживаем, а не берём пиксели как есть.
+	_anim.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	var height := float(frames.get_frame_texture(names[0], 0).get_height())
-	# Рост Киры в игре в пикселях мира; можно задать в метаданных SpriteFrames (height_px).
+	# Высота кадра в игре в пикселях мира (метаданные height_px у SpriteFrames, по умолчанию 48).
 	var target: float = frames.get_meta("height_px", 48.0)
 	_anim.scale = Vector2.ONE * (target / height)
 	_anim.offset.y = -height / 2.0
