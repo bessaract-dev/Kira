@@ -24,7 +24,7 @@ const WALL_COYOTE := 0.12
 const HOOK_MOMENTUM_TIME := 0.4
 const BOLT_SCENE := preload("res://scenes/player/chain_bolt.tscn")
 ## Покадровая анимация Киры. Если файла нет, рисуется временная картинка.
-## Имена анимаций: idle, run, jump, fall, whip, throw, hook, wall_slide, hurt, death.
+## Имена анимаций: idle, run, jump, fall, land, whip, throw, hook, wall_slide, hurt, death.
 ## Вариант без цепей можно добавить с окончанием _free (например run_free).
 const FRAMES_PATH := "res://assets/characters/kira/kira_frames.tres"
 const ACTION_ANIM_TIME := 0.25
@@ -52,6 +52,7 @@ var _dead := false
 var _anim: AnimatedSprite2D = null
 var _hurt_timer := 0.0
 var _throw_anim_timer := 0.0
+var _land_timer := 0.0
 
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _chains: Sprite2D = $Sprite/Chains
@@ -99,6 +100,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if is_on_floor() and not was_on_floor and fall_speed > 300.0:
 		Sound.play("land")
+		_land_timer = 0.15
 	_update_visuals(delta)
 	_update_focus()
 	if global_position.y > kill_y:
@@ -116,6 +118,7 @@ func _tick_timers(delta: float) -> void:
 	_wall_timer -= delta
 	_hurt_timer -= delta
 	_throw_anim_timer -= delta
+	_land_timer -= delta
 	if _whip_timer > 0.0:
 		_whip_timer -= delta
 		if _whip_timer <= 0.0:
@@ -312,7 +315,9 @@ func _pick_animation() -> String:
 		if is_on_wall_only() and velocity.y > 0.0:
 			return "wall_slide"
 		return "jump" if velocity.y < 0.0 else "fall"
-	return "run" if absf(velocity.x) > 10.0 else "idle"
+	if absf(velocity.x) > 10.0:
+		return "run"
+	return "land" if _land_timer > 0.0 else "idle"
 
 
 func _play(animation: String) -> void:
