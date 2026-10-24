@@ -21,7 +21,7 @@ const GRAVE_PARTS := {
 }
 const GRAVE_SOURCE_HEIGHT := 956.0
 ## Высота надгробия в игре
-const GRAVE_HEIGHT := 42.0
+const GRAVE_HEIGHT := 50.0
 ## На сколько кусков по каждой стороне рассыпается тело
 const CRUMBLE_GRID := 6
 ## Сколько скелет шатается перед тем, как рассыпаться
@@ -103,7 +103,8 @@ func _physics_process(delta: float) -> void:
 			if _state_time >= hurt_time:
 				_set_state(State.CHASE if player != null else State.WANDER)
 		State.DEATH:
-			velocity.x = 0.0
+			# Коллизия уже выключена: стоит на месте, чтобы не провалиться сквозь пол
+			velocity = Vector2.ZERO
 	move_and_slide()
 	_update_visual()
 
