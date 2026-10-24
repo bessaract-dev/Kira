@@ -227,6 +227,8 @@ func _test_doll() -> void:
 	player.global_position = doll.global_position + Vector2(100, 0)
 	await _frames(5)
 	_check(doll.state == doll.State.CHASE, "кукла замечает Киру и бежит к ней")
+	var doll_anim: AnimatedSprite2D = doll.get_node_or_null("Animated")
+	_check(doll_anim != null and doll_anim.animation == "chase", "кадры куклы: анимация бега")
 	var hp := GameState.hp
 	var attacked := false
 	for i in 150:
