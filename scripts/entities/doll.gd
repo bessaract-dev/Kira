@@ -8,6 +8,9 @@ extends CharacterBody2D
 enum State { WANDER, CHASE, ATTACK, HURT, DEATH }
 
 const FRAMES_PATH := "res://assets/characters/doll/doll_frames.tres"
+## На сколько осколков по каждой стороне разбивается кадр и сколько они летят
+const SHATTER_GRID := 5
+const SHATTER_TIME := 2.0
 
 @export var max_hp := 1
 @export var shard_reward := 1
@@ -26,7 +29,6 @@ const FRAMES_PATH := "res://assets/characters/doll/doll_frames.tres"
 @export var attack_hit_to := 0.65
 @export var attack_cooldown := 0.8
 @export var hurt_time := 0.4
-@export var death_time := 1.0
 @export var damage := 1
 
 var state := State.WANDER
@@ -197,8 +199,6 @@ func _state_length(animation: String) -> float:
 			return attack_time
 		"hurt":
 			return hurt_time
-		"death":
-			return death_time
 	return 0.0
 
 
@@ -225,11 +225,52 @@ func _die() -> void:
 	Sound.play("enemy_die")
 	$CollisionShape2D.set_deferred("disabled", true)
 	_hitbox.set_deferred("monitoring", false)
+	set_physics_process(false)
+	if _anim != null:
+		_shatter()
+		return
 	var tween := create_tween()
-	if _anim == null:
-		tween.tween_property(self, "scale", Vector2(1.5, 0.2), 0.25)
-		tween.parallel().tween_property(self, "modulate:a", 0.0, 0.25)
-	else:
-		tween.tween_interval(death_time)
-		tween.tween_property(self, "modulate:a", 0.0, 0.4)
+	tween.tween_property(self, "scale", Vector2(1.5, 0.2), 0.25)
+	tween.parallel().tween_property(self, "modulate:a", 0.0, 0.25)
 	tween.tween_callback(queue_free)
+
+
+## Кукла разбивается: текущий кадр режется на осколки, они разлетаются и гаснут.
+func _shatter() -> void:
+	var frame := _anim.sprite_frames.get_frame_texture(_anim.animation, _anim.frame) as AtlasTexture
+	_anim.visible = false
+	if frame == null:
+		queue_free()
+		return
+	var region := frame.region
+	var cell := region.size / Vector2(SHATTER_GRID, SHATTER_GRID)
+	var scale_factor := _anim.scale.x
+	var flip := -1.0 if _anim.flip_h else 1.0
+	var center := Vector2(0, -region.size.y / 2.0 * scale_factor)
+	var tween := create_tween().set_parallel()
+	for gx in SHATTER_GRID:
+		for gy in SHATTER_GRID:
+			var piece := Sprite2D.new()
+			piece.texture = frame.atlas
+			piece.region_enabled = true
+			piece.region_rect = Rect2(region.position + cell * Vector2(gx, gy), cell)
+			piece.flip_h = _anim.flip_h
+			piece.scale = _anim.scale
+			piece.texture_filter = _anim.texture_filter
+			var local := (cell * (Vector2(gx, gy) + Vector2(0.5, 0.5)) - region.size / 2.0) * scale_factor
+			local.x *= flip
+			piece.position = center + local
+			add_child(piece)
+			# Осколки разлетаются от центра куклы, падают на пол, лежат и гаснут
+			var away := local.normalized() if local.length() > 0.1 else Vector2.UP
+			var fly := piece.position + away * randf_range(12.0, 32.0) + Vector2(0, randf_range(-30.0, -10.0))
+			var land := Vector2(piece.position.x + (fly.x - piece.position.x) * 1.6, randf_range(-3.0, 0.0))
+			var fly_time := SHATTER_TIME * 0.25
+			var fall_time := SHATTER_TIME * 0.35
+			tween.tween_property(piece, "position", fly, fly_time) \
+					.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			tween.tween_property(piece, "position", land, fall_time) \
+					.set_delay(fly_time).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			tween.tween_property(piece, "rotation", randf_range(-4.0, 4.0), fly_time + fall_time)
+			tween.tween_property(piece, "modulate:a", 0.0, SHATTER_TIME * 0.3).set_delay(SHATTER_TIME * 0.7)
+	tween.chain().tween_callback(queue_free)
