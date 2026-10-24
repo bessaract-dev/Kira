@@ -13,6 +13,7 @@ func _ready() -> void:
 		await _test_level(level_id)
 	await _test_animation()
 	await _test_attacks()
+	await _test_ghost()
 	await _test_double_jump()
 	await _test_hook()
 	await _test_wall_jump()
@@ -143,7 +144,7 @@ func _test_attacks() -> void:
 	await _frames(4)
 	Input.action_release("attack")
 	await _frames(20)
-	_check(not is_instance_valid(soul), "хлыст побеждает душу")
+	_check(not is_instance_valid(soul) or soul.state == soul.State.DEATH, "хлыст побеждает душу")
 	Input.action_press("throw")
 	await _frames(4)
 	Input.action_release("throw")
@@ -170,6 +171,38 @@ func _test_hook() -> void:
 	_check(player.global_position.x > 74 * 32 and player.global_position.y <= 13 * 32 + 1, "перелёт пропасти на крюке")
 	level.queue_free()
 	await get_tree().process_frame
+
+
+func _test_ghost() -> void:
+	print("призрак")
+	GameState.new_game()
+	var level := await _load_level("level_01")
+	var player: Player = level.player
+	var ghost: Node2D = null
+	for node in level.get_node("Entities").get_children():
+		if node.scene_file_path.ends_with("enemy_soul.tscn"):
+			ghost = node
+			break
+	for node in level.get_tree().get_nodes_in_group("enemy"):
+		if node != ghost:
+			node.queue_free()
+	_check(ghost.state == ghost.State.WANDER, "призрак бесцельно парит")
+	player.global_position = ghost.global_position + Vector2(120, 0)
+	await _frames(5)
+	_check(ghost.state == ghost.State.CHASE, "призрак замечает Киру и летит к ней")
+	var hp := GameState.hp
+	var attacked := false
+	for i in 150:
+		await _frames(1)
+		if ghost.state == ghost.State.ATTACK:
+			attacked = true
+		if GameState.hp < hp:
+			break
+	_check(attacked and GameState.hp < hp, "призрак атакует и ранит")
+	ghost.take_hit(0, player.global_position)
+	_check(ghost.state == ghost.State.HURT, "призрак вздрагивает от удара")
+	level.queue_free()
+	await _frames(2)
 
 
 func _test_double_jump() -> void:
