@@ -15,6 +15,7 @@ func _ready() -> void:
 	await _test_attacks()
 	await _test_ghost()
 	await _test_doll()
+	await _test_skeleton()
 	await _test_double_jump()
 	await _test_hook()
 	await _test_wall_jump()
@@ -240,6 +241,43 @@ func _test_doll() -> void:
 	_check(attacked and GameState.hp < hp, "кукла бросается и ранит")
 	doll.take_hit(1, player.global_position)
 	_check(doll.state == doll.State.DEATH, "кукла разваливается от удара")
+	level.queue_free()
+	await _frames(2)
+
+
+func _test_skeleton() -> void:
+	print("скелет")
+	GameState.new_game()
+	var level := await _load_level("level_01")
+	var player: Player = level.player
+	for node in level.get_tree().get_nodes_in_group("enemy"):
+		node.queue_free()
+	var skel: Node2D = load("res://scenes/entities/enemy_skeleton.tscn").instantiate()
+	level.get_node("Entities").add_child(skel)
+	skel.global_position = player.global_position + Vector2(200, -2)
+	await _frames(10)
+	_check(skel.state == skel.State.WANDER, "скелет бродит")
+	player.global_position = skel.global_position + Vector2(-100, 0)
+	await _frames(5)
+	_check(skel.state == skel.State.CHASE, "скелет замечает Киру и идёт к ней")
+	var hp := GameState.hp
+	var attacked := false
+	for i in 200:
+		await _frames(1)
+		if skel.state == skel.State.ATTACK:
+			attacked = true
+		if GameState.hp < hp:
+			break
+	_check(attacked and GameState.hp < hp, "скелет рубит мечом и ранит")
+	for i in 3:
+		skel.take_hit(1, player.global_position)
+	_check(skel.state == skel.State.DEATH and not skel.is_in_group("enemy"), "скелет рассыпается после трёх ударов")
+	await get_tree().create_timer(2.5).timeout
+	var grave := 0
+	for child in skel.get_children():
+		if child is Sprite2D and not child.region_enabled and child.visible and child.name != "Sprite":
+			grave += 1
+	_check(is_instance_valid(skel) and grave == 3, "надгробие из меча, черепа и костей остаётся")
 	level.queue_free()
 	await _frames(2)
 
