@@ -8,6 +8,7 @@ var _failed := 0
 func _ready() -> void:
 	_test_upgrades()
 	_test_chains()
+	_test_touch_mouse()
 	for level_id in GameState.LEVELS:
 		await _test_level(level_id)
 	await _test_animation()
@@ -51,6 +52,22 @@ func _test_chains() -> void:
 
 
 ## Смерть Киры перезагрузила бы сцену и прервала тест.
+func _has_mouse(action: String) -> bool:
+	for event in InputMap.action_get_events(action):
+		if event is InputEventMouseButton:
+			return true
+	return false
+
+
+func _test_touch_mouse() -> void:
+	var was := GameState.touch_mode
+	GameState.set_touch_mode(true)
+	_check(not _has_mouse("attack") and not _has_mouse("throw"), "касание экрана не бьёт хлыстом и не бросает цепь")
+	GameState.set_touch_mode(false)
+	_check(_has_mouse("attack") and _has_mouse("throw"), "на ПК мышь снова атакует")
+	GameState.set_touch_mode(was)
+
+
 func _load_level(level_id: String) -> Node2D:
 	GameState.current_level = level_id
 	GameState.checkpoint = null

@@ -41,6 +41,8 @@ var picked: Dictionary = {}
 ## Позиция последнего голубого пламени на текущем уровне (Vector2) или null
 var checkpoint = null
 var touch_mode := false
+## Кнопки мыши, снятые с действий в сенсорном режиме (действие -> события)
+var _mouse_bindings: Dictionary = {}
 
 
 func _ready() -> void:
@@ -51,6 +53,7 @@ func _ready() -> void:
 	for db in [base_stats, upgrades_db, items_db]:
 		db.erase("_comment")
 	touch_mode = DisplayServer.is_touchscreen_available() or OS.has_feature("mobile")
+	_update_mouse_bindings()
 	new_game()
 
 
@@ -221,4 +224,27 @@ func get_level_data() -> Dictionary:
 
 func set_touch_mode(enabled: bool) -> void:
 	touch_mode = enabled
+	_update_mouse_bindings()
 	touch_mode_changed.emit(enabled)
+
+
+## Касание экрана Godot превращает ещё и в щелчок мыши, а на щелчках висят
+## хлыст и бросок. В сенсорном режиме снимаем кнопки мыши с действий,
+## чтобы атака шла только от своих экранных кнопок.
+func _update_mouse_bindings() -> void:
+	if touch_mode:
+		for action in InputMap.get_actions():
+			if action.begins_with("ui_") or _mouse_bindings.has(action):
+				continue
+			var removed: Array = []
+			for event in InputMap.action_get_events(action):
+				if event is InputEventMouseButton:
+					removed.append(event)
+					InputMap.action_erase_event(action, event)
+			if not removed.is_empty():
+				_mouse_bindings[action] = removed
+	else:
+		for action in _mouse_bindings:
+			for event in _mouse_bindings[action]:
+				InputMap.action_add_event(action, event)
+		_mouse_bindings.clear()
