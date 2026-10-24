@@ -14,6 +14,7 @@ func _ready() -> void:
 	await _test_animation()
 	await _test_attacks()
 	await _test_ghost()
+	await _test_doll()
 	await _test_double_jump()
 	await _test_hook()
 	await _test_wall_jump()
@@ -205,6 +206,38 @@ func _test_ghost() -> void:
 	_check(ghost.state == ghost.State.HURT, "призрак вздрагивает от удара")
 	await _frames(2)
 	_check(anim.animation == "hurt", "кадры призрака: анимация урона")
+	level.queue_free()
+	await _frames(2)
+
+
+func _test_doll() -> void:
+	print("кукла")
+	GameState.new_game()
+	var level := await _load_level("level_01")
+	var player: Player = level.player
+	var doll: Node2D = null
+	for node in level.get_node("Entities").get_children():
+		if node.scene_file_path.ends_with("enemy_doll.tscn"):
+			doll = node
+			break
+	for node in level.get_tree().get_nodes_in_group("enemy"):
+		if node != doll:
+			node.queue_free()
+	_check(doll.state == doll.State.WANDER, "кукла бродит")
+	player.global_position = doll.global_position + Vector2(100, 0)
+	await _frames(5)
+	_check(doll.state == doll.State.CHASE, "кукла замечает Киру и бежит к ней")
+	var hp := GameState.hp
+	var attacked := false
+	for i in 150:
+		await _frames(1)
+		if doll.state == doll.State.ATTACK:
+			attacked = true
+		if GameState.hp < hp:
+			break
+	_check(attacked and GameState.hp < hp, "кукла бросается и ранит")
+	doll.take_hit(1, player.global_position)
+	_check(doll.state == doll.State.DEATH, "кукла разваливается от удара")
 	level.queue_free()
 	await _frames(2)
 
