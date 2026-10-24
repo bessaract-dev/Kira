@@ -46,6 +46,8 @@ var _wall_lock := 0.0
 var _momentum := 0.0
 var _wall_timer := 0.0
 var _wall_normal := 0.0
+## Сколько прыжков в воздухе ещё осталось (двойной прыжок)
+var _air_jumps := 0
 var _hook_target: Node2D = null
 var _hook_time := 0.0
 var _dead := false
@@ -81,6 +83,7 @@ func _physics_process(delta: float) -> void:
 
 	if is_on_floor():
 		_coyote = COYOTE_TIME
+		_air_jumps = int(GameState.get_stat("air_jumps"))
 	if input_enabled:
 		if Input.is_action_just_pressed("jump"):
 			_jump_buffer = JUMP_BUFFER
@@ -143,6 +146,7 @@ func _process_walk(direction: float, delta: float) -> void:
 	if _can_wall_jump() and is_on_wall_only():
 		_wall_timer = WALL_COYOTE
 		_wall_normal = get_wall_normal().x
+		_air_jumps = int(GameState.get_stat("air_jumps"))
 		if direction != 0.0:
 			# Скольжение по стене
 			velocity.y = minf(velocity.y, GameState.get_stat("wall_slide_speed"))
@@ -165,6 +169,15 @@ func _process_walk(direction: float, delta: float) -> void:
 			_jumping = true
 			_sprite.scale = Vector2(0.8, 1.2)
 			Sound.play("wall_jump")
+		elif _air_jumps > 0 and _hook_target == null:
+			# Двойной прыжок: ещё раз нажала прыжок в воздухе.
+			_air_jumps -= 1
+			velocity.y = -jump_velocity * GameState.get_stat("air_jump_power")
+			_jump_buffer = 0.0
+			_jumping = true
+			_sprite.scale = Vector2(0.8, 1.2)
+			_restart_jump_animation()
+			Sound.play("jump")
 	# Отпустила кнопку раньше: прыжок ниже.
 	if _jumping and velocity.y < 0.0 and not Input.is_action_pressed("jump"):
 		velocity.y *= 0.5
@@ -174,7 +187,7 @@ func _process_walk(direction: float, delta: float) -> void:
 
 
 func _can_wall_jump() -> bool:
-	return GameState.has_ability("wall_jump")
+	return GameState.has_ability("wall_jump") or GameState.get_stat("wall_jump_from_start") > 0.0
 
 
 # --- Хлыст ---
@@ -330,6 +343,13 @@ func _play(animation: String) -> void:
 		animation = "idle" if frames.has_animation("idle") else frames.get_animation_names()[0]
 	if _anim.animation != animation or not _anim.is_playing():
 		_anim.play(animation)
+
+
+## Второй прыжок начинает анимацию прыжка заново.
+func _restart_jump_animation() -> void:
+	if _anim != null and _anim.animation.begins_with("jump"):
+		_anim.frame = 0
+		_anim.play()
 
 
 func _on_abilities_changed() -> void:

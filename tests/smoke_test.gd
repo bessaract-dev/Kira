@@ -13,6 +13,7 @@ func _ready() -> void:
 		await _test_level(level_id)
 	await _test_animation()
 	await _test_attacks()
+	await _test_double_jump()
 	await _test_hook()
 	await _test_wall_jump()
 	print("SMOKE ", "OK" if _failed == 0 else "FAILED: %d" % _failed)
@@ -169,6 +170,30 @@ func _test_hook() -> void:
 	_check(player.global_position.x > 74 * 32 and player.global_position.y <= 13 * 32 + 1, "перелёт пропасти на крюке")
 	level.queue_free()
 	await get_tree().process_frame
+
+
+func _test_double_jump() -> void:
+	print("двойной прыжок")
+	GameState.new_game()
+	var level := await _load_level("level_01")
+	var player: Player = level.player
+	Input.action_press("jump")
+	await _frames(22)
+	Input.action_release("jump")
+	await _frames(2)
+	_check(not player.is_on_floor() and player.velocity.y > -150.0, "Кира в верхней точке прыжка")
+	Input.action_press("jump")
+	await _frames(3)
+	_check(player.velocity.y < -300.0, "второй прыжок в воздухе")
+	Input.action_release("jump")
+	await _frames(2)
+	Input.action_press("jump")
+	await _frames(3)
+	Input.action_release("jump")
+	_check(player.velocity.y > -300.0, "третьего прыжка нет")
+	await _frames(60)
+	level.queue_free()
+	await _frames(2)
 
 
 func _test_wall_jump() -> void:

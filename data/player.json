@@ -12,5 +12,8 @@
   "hook_speed": 660,
   "wall_slide_speed": 90,
   "wall_jump_push": 230,
+  "air_jumps": 1,
+  "air_jump_power": 0.9,
+  "wall_jump_from_start": 0,
   "invulnerable_time": 1.0
 }
