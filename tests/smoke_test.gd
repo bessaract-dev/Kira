@@ -190,6 +190,8 @@ func _test_ghost() -> void:
 	player.global_position = ghost.global_position + Vector2(120, 0)
 	await _frames(5)
 	_check(ghost.state == ghost.State.CHASE, "призрак замечает Киру и летит к ней")
+	var anim: AnimatedSprite2D = ghost.get_node_or_null("Animated")
+	_check(anim != null and anim.animation == "chase", "кадры призрака: анимация погони")
 	var hp := GameState.hp
 	var attacked := false
 	for i in 150:
@@ -201,6 +203,8 @@ func _test_ghost() -> void:
 	_check(attacked and GameState.hp < hp, "призрак атакует и ранит")
 	ghost.take_hit(0, player.global_position)
 	_check(ghost.state == ghost.State.HURT, "призрак вздрагивает от удара")
+	await _frames(2)
+	_check(anim.animation == "hurt", "кадры призрака: анимация урона")
 	level.queue_free()
 	await _frames(2)
 
