@@ -32,8 +32,8 @@ const FRAMES_PATHS := [
 @export var attack_range := 34.0
 ## Длительность удара, доля удара, когда он ранит, и пауза после удара
 @export var attack_time := 0.8
-@export var attack_hit_from := 0.4
-@export var attack_hit_to := 0.7
+@export var attack_hit_from := 0.3
+@export var attack_hit_to := 0.65
 @export var attack_cooldown := 0.9
 @export var hurt_time := 0.4
 @export var death_time := 1.2
