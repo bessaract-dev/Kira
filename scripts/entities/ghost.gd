@@ -2,13 +2,21 @@ extends CharacterBody2D
 ## Призрак (душа подростка). Летает и проходит сквозь стены.
 ## Состояния: бесцельно парит около своего места, замечает Киру и летит к ней,
 ## вблизи замахивается и бьёт, от удара цепью вздрагивает, а в конце рассеивается.
-## Кадры берутся из assets/characters/ghost/ghost_frames.tres
-## (анимации idle, chase, attack, hurt, death); если их нет, остаётся временная картинка.
+## Кадры берутся из assets/characters/ghost/ghost_frames.tres и ghost2..ghost4/ghost_frames.tres
+## (четыре разных подростка; анимации idle, chase, attack, hurt, death).
+## Если кадров нет, остаётся временная картинка.
 
 enum State { WANDER, CHASE, ATTACK, HURT, DEATH }
 
-const FRAMES_PATH := "res://assets/characters/ghost/ghost_frames.tres"
+const FRAMES_PATHS := [
+	"res://assets/characters/ghost/ghost_frames.tres",
+	"res://assets/characters/ghost/ghost2/ghost_frames.tres",
+	"res://assets/characters/ghost/ghost3/ghost_frames.tres",
+	"res://assets/characters/ghost/ghost4/ghost_frames.tres",
+]
 
+## Какой из призраков (1-4); 0 значит случайный из тех, чьи кадры есть
+@export_range(0, 4) var variant := 0
 @export var max_hp := 1
 @export var shard_reward := 1
 ## Скорость, когда просто парит
@@ -53,8 +61,16 @@ func _ready() -> void:
 	_wander_target = _home
 	_sprite_base_y = _sprite.position.y
 	add_to_group("enemy")
-	if ResourceLoader.exists(FRAMES_PATH):
-		_setup_animation(load(FRAMES_PATH))
+	var frames_path := _pick_frames()
+	if frames_path != "":
+		_setup_animation(load(frames_path))
+
+
+func _pick_frames() -> String:
+	if variant > 0 and ResourceLoader.exists(FRAMES_PATHS[variant - 1]):
+		return FRAMES_PATHS[variant - 1]
+	var found := FRAMES_PATHS.filter(func(path): return ResourceLoader.exists(path))
+	return found.pick_random() if not found.is_empty() else ""
 
 
 func _setup_animation(frames: SpriteFrames) -> void:
