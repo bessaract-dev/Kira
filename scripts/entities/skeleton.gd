@@ -26,6 +26,10 @@ const GRAVE_HEIGHT := 50.0
 const CRUMBLE_GRID := 6
 ## Сколько скелет шатается перед тем, как рассыпаться
 const SHUDDER_TIME := 0.5
+## Анимации, нарисованные лицом вправо; остальные кадры скелета смотрят влево
+const FACES_RIGHT := ["chase"]
+## Ближе этого по горизонтали к Кире скелет не разворачивается, чтобы не дёргаться туда-сюда
+const TURN_DEADZONE := 6.0
 
 @export var max_hp := 3
 @export var shard_reward := 2
@@ -41,8 +45,8 @@ const SHUDDER_TIME := 0.5
 @export var attack_reach := 48.0
 ## Длительность удара, доля удара, когда меч ранит, и пауза после
 @export var attack_time := 0.9
-@export var attack_hit_from := 0.4
-@export var attack_hit_to := 0.65
+@export var attack_hit_from := 0.62
+@export var attack_hit_to := 0.95
 @export var attack_cooldown := 1.0
 @export var hurt_time := 0.3
 @export var damage := 1
@@ -53,7 +57,6 @@ var _direction := -1.0
 var _state_time := 0.0
 var _cooldown := 0.0
 var _pause := 0.0
-## Кадры скелета нарисованы лицом вправо
 var _anim: AnimatedSprite2D = null
 
 @onready var _sprite: Sprite2D = $Sprite
@@ -129,7 +132,7 @@ func _chase(player: Node2D) -> void:
 		_set_state(State.WANDER)
 		return
 	var offset := player.global_position - global_position
-	if offset.x != 0.0:
+	if absf(offset.x) > TURN_DEADZONE:
 		_direction = signf(offset.x)
 	if absf(offset.x) <= attack_range and _cooldown <= 0.0:
 		_set_state(State.ATTACK)
@@ -170,8 +173,10 @@ func _set_state(new_state: State) -> void:
 
 func _update_visual() -> void:
 	if _anim != null:
-		_anim.flip_h = _direction < 0.0
-		_play(_animation_for_state())
+		var animation := _animation_for_state()
+		var faces_right := animation in FACES_RIGHT
+		_anim.flip_h = (_direction < 0.0) == faces_right
+		_play(animation)
 	else:
 		# Временная картинка нарисована лицом влево
 		_sprite.flip_h = _direction > 0.0
@@ -222,7 +227,7 @@ func take_hit(amount: int, from: Vector2) -> void:
 	_hp -= amount
 	# Тяжёлая броня: почти не отбрасывает
 	velocity = Vector2(signf(global_position.x - from.x) * 60.0, -60.0)
-	if from.x != global_position.x:
+	if absf(from.x - global_position.x) > TURN_DEADZONE:
 		_direction = signf(from.x - global_position.x)
 	Sound.play("enemy_hit")
 	var target: CanvasItem = _anim if _anim != null else _sprite
@@ -302,7 +307,8 @@ func _build_grave() -> void:
 			return
 		textures[part] = load(path)
 	var k := GRAVE_HEIGHT / GRAVE_SOURCE_HEIGHT
-	var flip := -1.0 if _direction < 0.0 else 1.0
+	# Надгробие нарисовано с черепом лицом влево, как и сам скелет
+	var flip := 1.0 if _direction < 0.0 else -1.0
 	var sprites := {}
 	for part in GRAVE_PARTS:
 		var sprite := Sprite2D.new()
