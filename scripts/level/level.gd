@@ -173,7 +173,8 @@ func _spawn_player() -> void:
 	if _chaser:
 		# Тьма появляется позади Киры (и после возрождения тоже).
 		_chaser.place(player.position.x - 360.0, _size.y * TILE)
-		_chaser.stop_x = (_size.x - 12) * TILE
+		# Тьма доползает до самой правой стены уровня, спасение только в выходе.
+		_chaser.stop_x = (_size.x - 1) * TILE - 8.0
 	player.died.connect(_on_player_died)
 	_hud.bind_player(player)
 

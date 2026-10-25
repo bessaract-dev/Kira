@@ -95,6 +95,9 @@ func _test_level(level_id: String) -> void:
 	var player: Player = level.player
 	_check(player != null and player.is_on_floor(), "Кира стоит на полу")
 	_check(level.get_node("Entities").get_child_count() > 10, "объекты расставлены")
+	var chaser := level.get_tree().get_first_node_in_group("chaser_group")
+	if chaser != null:
+		_check(chaser.stop_x >= (level._size.x - 2) * level.TILE, "тьма доходит до правой стены")
 	var start := player.global_position
 	Input.action_press("move_right")
 	await _frames(20)
